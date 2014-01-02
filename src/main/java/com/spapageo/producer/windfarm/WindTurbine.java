@@ -1,0 +1,251 @@
+/**
+ * 
+ */
+package com.spapageo.producer.windfarm;
+
+import org.apache.commons.math3.distribution.NormalDistribution;
+import com.spapageo.producer.utils.Curve;
+
+import static java.lang.Math.*;
+
+/**
+ * @author Spyro Papageorgiou
+ *
+ */
+public class WindTurbine {
+
+	private double latitude;
+
+	// The altitude for which the input speed is given
+	private double refAltitude = 10;
+
+	// The roughness of the surface near the turbine
+	private double surfaceRoughness;
+
+	// The air density at sea level at 15 C
+	private double standardAirDensity = 1.225;
+
+	private double kappa = 0.4;
+
+	// The maximum/rated output
+	private double ratedOutput;
+
+	// The hub height
+	private double hubHeigth;
+
+	// The speed after which the turbine starts to produce power
+	private double cutInWindSpeed;
+
+	// The speed after which the turbine stops to avoid damage
+	private double cutOutWindSpeed;
+
+	//The power curve for 15 C at sea level
+	private Curve powerCurve;
+
+	public WindTurbine(double latitude,double surfaceRoughness,double ratedOutput,
+			double hubHeigth,double cutInWindSpeed,double cutOutWindSpeed,
+			Curve powerCurve) {
+
+		this.surfaceRoughness = surfaceRoughness;
+		this.ratedOutput = ratedOutput;
+		this.hubHeigth = hubHeigth;
+		this.cutInWindSpeed = cutInWindSpeed;
+		this.cutOutWindSpeed = cutOutWindSpeed;
+		this.powerCurve = powerCurve;
+		this.latitude = latitude;
+	}
+
+
+	public double getPowerOutput(double temperature, double avrHourlyWindSpeed) {		
+		double sumPowerOutput = 0;
+
+		//Get the wind speed at the height of the turbine hub
+		double f = calulcatef(latitude);
+		double ua = calculateUasterisk(avrHourlyWindSpeed, refAltitude, f, surfaceRoughness,kappa);
+
+		double correctedHourlySpeed = calculateWindAtAltitude(hubHeigth,surfaceRoughness,ua,f,kappa);
+
+		double std = calculateStd(f, ua, hubHeigth, surfaceRoughness);
+
+		NormalDistribution gauss = new NormalDistribution(correctedHourlySpeed, std);
+
+
+		for(int i = 0; i < 60; i++){
+			sumPowerOutput += calculateAirDensity(temperature, hubHeigth) * powerCurve.value(gauss.sample()) / standardAirDensity;
+		}
+		
+		return sumPowerOutput/60;
+	}
+
+	protected static double calculateStd(double f,double ua,double altitude,double z0){
+
+
+		double h = 1 - 6*f*altitude/ua;
+		double p = pow(h,16);
+
+		assert(ua/(f*z0) != 0);
+		assert(altitude != z0);
+		assert((0.538+0.09*log(altitude/z0)) >= 0);
+
+		double std = 7.5*h*pow((0.538+0.09*log(altitude/z0)),p)*ua / 
+				(1+0.156*log(ua/(f*z0)));
+		return std;
+	}
+
+	protected double calculateAirDensity(double temperature, double altitude){
+		// po (1-Lh/T0)^ (gM/RL)
+		double p0 = 101325;
+		double L = 0.0065;
+		double g = 9.80665;
+		double M = 0.0289644;
+		double R = 8.31447;
+		double T0 = 288.15;
+		// calculate pressure as a function of altitude
+		double p = p0 * pow(1 - (L*altitude)/T0, (g *M)/(R*L));
+		//calculate the air density from the pressure and the temperature
+		return (p * M)/(R * temperature);
+	}
+
+
+	protected static double calculateWindAtAltitude(double newAltitude,double surfaceRoughness, double uasterisk,double f,double kappa){
+
+		return (log(newAltitude/surfaceRoughness)*uasterisk + 34.5*f*newAltitude)/kappa;
+	}
+
+
+	protected static double calculateUasterisk(double inputwindspeed,double altitude,double f,double surfaceRoughness,double kappa){
+		assert(altitude > 0);
+		assert(f > 0);
+		assert(surfaceRoughness > 0);
+		assert(inputwindspeed > 0);
+
+		return (inputwindspeed*kappa - 34.5 * f * altitude)/log(altitude/surfaceRoughness);
+	}
+
+	protected static double calulcatef(double latitude){
+		assert(latitude >= -90 && latitude < 90);
+		assert(latitude != 0);
+		return 2 * 7.2 * pow(10,-5)*sin(toRadians(abs(latitude)));
+	}
+
+	/**
+	 * @return the ratedOutput
+	 */
+	public double getRatedOutput() {
+		return ratedOutput;
+	}
+
+	/**
+	 * @param ratedOutput the ratedOutput to set
+	 */
+	public void setRatedOutput(double ratedOutput) {
+		this.ratedOutput = ratedOutput;
+	}
+
+	/**
+	 * @return the hubHeigth
+	 */
+	public double getHubHeigth() {
+		return hubHeigth;
+	}
+
+	/**
+	 * @param hubHeigth the hubHeigth to set
+	 */
+	public void setHubHeigth(double hubHeigth) {
+		this.hubHeigth = hubHeigth;
+	}
+
+	/**
+	 * @return the cutInWindSpeed
+	 */
+	public double getCutInWindSpeed() {
+		return cutInWindSpeed;
+	}
+
+	/**
+	 * @param cutInWindSpeed the cutInWindSpeed to set
+	 */
+	public void setCutInWindSpeed(double cutInWindSpeed) {
+		this.cutInWindSpeed = cutInWindSpeed;
+	}
+
+	/**
+	 * @return the cutOutWindSpeed
+	 */
+	public double getCutOutWindSpeed() {
+		return cutOutWindSpeed;
+	}
+
+	/**
+	 * @param cutOutWindSpeed the cutOutWindSpeed to set
+	 */
+	public void setCutOutWindSpeed(double cutOutWindSpeed) {
+		this.cutOutWindSpeed = cutOutWindSpeed;
+	}
+
+	/**
+	 * @return the curve
+	 */
+	public Curve getPowerCurve() {
+		return powerCurve;
+	}
+
+	/**
+	 * @param curve the curve to set
+	 */
+	public void setPowerCurve(Curve powerCurve) {
+		this.powerCurve = powerCurve;
+	}
+
+	/**
+	 * @return the refAltitude
+	 */
+	public double getRefAltitude() {
+		return refAltitude;
+	}
+
+	/**
+	 * @param refAltitude the refAltitude to set
+	 */
+	public void setRefAltitude(double refAltitude) {
+		this.refAltitude = refAltitude;
+	}
+
+	/**
+	 * @return the surfaceRoughness
+	 */
+	public double getSurfaceRoughness() {
+		return surfaceRoughness;
+	}
+
+	/**
+	 * @param surfaceRoughness the surfaceRoughness to set
+	 */
+	public void setSurfaceRoughness(double surfaceRoughness) {
+		this.surfaceRoughness = surfaceRoughness;
+	}
+
+	/**
+	 * @return the standardAirDensity
+	 */
+	public double getStandardAirDensity() {
+		return standardAirDensity;
+	}
+
+	/**
+	 * @return the kappa
+	 */
+	public double getKappa() {
+		return kappa;
+	}
+
+
+	/**
+	 * @param kappa the kappa to set
+	 */
+	public void setKappa(double kappa) {
+		this.kappa = kappa;
+	}
+
+}
