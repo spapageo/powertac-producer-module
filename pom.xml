@@ -2,9 +2,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.spapageo</groupId>
+    <parent>
+      <groupId>org.powertac</groupId>
+      <artifactId>server-master</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
+      <relativePath />
+    </parent>
+    
 	<artifactId>producer</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Spyros Papageorgiou</name>
@@ -30,18 +36,31 @@
 			</plugin>
 		</plugins>
 	</build>
-
+    
+     <!-- Sonatype OSS repo for resolving snapshot modules -->
+    <repositories>
+       <repository>
+         <id>sonatype</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+       </repository>
+    </repositories>
+    
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.2</version>
 		</dependency>
+        <dependency>
+            <groupId>org.powertac</groupId>
+            <artifactId>server-interface</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 	</dependencies>
+	<scm>
+		<url>https://spapageo@bitbucket.org/spapageo/producer.git</url>
+		<connection>scm:git:git//bitbucket.org/spapageo/producer.git</connection>
+		<developerConnection>scm:git:git@bitbucket.org/spapageo/producer.git</developerConnection>
+	</scm>
 </project>
