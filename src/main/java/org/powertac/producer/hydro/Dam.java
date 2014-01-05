@@ -3,6 +3,8 @@
  */
 package org.powertac.producer.hydro;
 
+import org.powertac.common.WeatherForecastPrediction;
+import org.powertac.common.WeatherReport;
 import org.powertac.producer.utils.Curve;
 
 /**
@@ -17,9 +19,9 @@ public class Dam extends HydroBase{
 	
 	private double nextOutput;
 	
-	public Dam(Curve inputFlow, double minFlow, double maxFlow,
-			Curve turbineEfficiency, Curve volumeHeigth, double initialVolume, double installedCapacity) {
-		super(inputFlow, minFlow, maxFlow, turbineEfficiency,initialVolume,installedCapacity,volumeHeigth.value(initialVolume));
+	public Dam(String name,Curve inputFlow, double minFlow, double maxFlow,
+			Curve turbineEfficiency, Curve volumeHeigth, double initialVolume, double capacity) {
+		super(name,inputFlow, minFlow, maxFlow, turbineEfficiency,initialVolume,volumeHeigth.value(initialVolume),capacity);
 		this.volumeHeight = volumeHeigth;
 		
 		calculateInvOut();
@@ -44,7 +46,7 @@ public class Dam extends HydroBase{
 
 	@Override
 	protected double getFlow(double inputFlow) {
-		if(nextOutput == installedCapacity){
+		if(nextOutput == upperPowerCap){
 			return maxFlow;
 		}else{
 			return invCurveOut.value(nextOutput/height);
@@ -58,6 +60,17 @@ public class Dam extends HydroBase{
 	
 	protected void setPrefferedOutput(double preferredOut){
 		
+	}
+
+	@Override
+	protected double getOutput(WeatherReport weatherReport) {
+		return getOutput(this.timeService.getCurrentDateTime().getDayOfYear());
+	}
+
+	@Override
+	protected double getOutput(int timeslotIndex,
+			WeatherForecastPrediction weatherForecastPrediction) {
+		return getOutput(this.timeslotService.getTimeForIndex(timeslotIndex).toDateTime().getDayOfYear());
 	}
 
 }

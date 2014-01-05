@@ -3,6 +3,8 @@
  */
 package org.powertac.producer.hydro;
 
+import org.powertac.common.WeatherForecastPrediction;
+import org.powertac.common.WeatherReport;
 import org.powertac.producer.utils.Curve;
 
 /**
@@ -11,11 +13,11 @@ import org.powertac.producer.utils.Curve;
  */
 public class RunOfRiver extends HydroBase{
 
-	public RunOfRiver(Curve inputFlow, double minFlow, double maxFlow,
+	public RunOfRiver(String name,Curve inputFlow, double minFlow, double maxFlow,
 			Curve turbineEfficiency, double initialVolume,
-			double installedCapacity, double initialHeight) {
-		super(inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
-				installedCapacity, initialHeight);
+			double installedCapacity, double initialHeight, double capacity) {
+		super(name,inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
+				initialHeight,capacity);
 	}
 
 	@Override
@@ -27,5 +29,16 @@ public class RunOfRiver extends HydroBase{
 	@Override
 	protected double getFlow(double inputFlow) {
 		return inputFlow;
+	}
+
+	@Override
+	protected double getOutput(WeatherReport weatherReport) {
+		return getOutput(this.timeService.getCurrentDateTime().getDayOfYear());
+	}
+
+	@Override
+	protected double getOutput(int timeslotIndex,
+			WeatherForecastPrediction weatherForecastPrediction) {
+		return getOutput(this.timeslotService.getTimeForIndex(timeslotIndex).toDateTime().getDayOfYear());
 	}
 }

@@ -32,7 +32,7 @@ public class ProducerService extends TimeslotPhaseProcessor
 	   * appropriately. Use log.debug() for output you want to see in testing or
 	   * debugging.
 	   */
-	  static final private Logger LOGGER = Logger.getLogger(ProducerService.class
+	  static final private Logger log = Logger.getLogger(ProducerService.class
 	          .getName());
 
 	  @Autowired

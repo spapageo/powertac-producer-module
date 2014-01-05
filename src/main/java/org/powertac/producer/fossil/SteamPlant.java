@@ -5,6 +5,10 @@ package org.powertac.producer.fossil;
 
 import java.util.Random;
 
+import org.powertac.common.WeatherForecastPrediction;
+import org.powertac.common.WeatherReport;
+import org.powertac.common.enumerations.PowerType;
+import org.powertac.producer.Producer;
 import org.powertac.producer.utils.Curve;
 
 import static java.lang.Math.*;
@@ -12,19 +16,16 @@ import static java.lang.Math.*;
  * @author Doom
  *
  */
-public class SteamPlant {
-	private double maxOutput;
+public class SteamPlant extends Producer{
 	private double adjustmentSpeed;
 	private double diviation;
-	private double prefferedOutput;
 	private double lastOutput;
 	private Random rand;
 	
-	SteamPlant(double ratedOutput, double adjustmentSpeed, double diviation){
-		this.maxOutput = ratedOutput;
-		this.lastOutput = maxOutput;
-		this.prefferedOutput = this.maxOutput;
-		
+	SteamPlant(String name, double adjustmentSpeed, double diviation, double capacity){
+		//Maybe change the profile hours
+		super(name,PowerType.FOSSIL_PRODUCTION,24,capacity);
+		this.lastOutput = capacity;
 		this.adjustmentSpeed = adjustmentSpeed;
 		this.diviation = diviation;
 		
@@ -34,8 +35,8 @@ public class SteamPlant {
 	public double getOutput(){
 		Curve out = new Curve();
 		out.add(0, lastOutput);
-		double time = (prefferedOutput - lastOutput)/(signum(prefferedOutput - lastOutput)*adjustmentSpeed);
-		out.add(time, prefferedOutput);
+		double time = (preferredOutput - lastOutput)/(signum(preferredOutput - lastOutput)*adjustmentSpeed);
+		out.add(time, preferredOutput);
 		
 		double outSum = 0.0;
 		for(double t = 0.0; t < 60; t++){
@@ -43,22 +44,9 @@ public class SteamPlant {
 		}
 
 		lastOutput = out.value(60.0);
-		
-		return outSum/60;
-	}
-
-	/**
-	 * @return the maxOutput
-	 */
-	public double getMaxOutput() {
-		return maxOutput;
-	}
-
-	/**
-	 * @param maxOutput the maxOutput to set
-	 */
-	public void setMaxOutput(double maxOutput) {
-		this.maxOutput = maxOutput;
+		if(outSum > 0)
+			throw new IllegalStateException("I fucked up");
+		return outSum/60.0;
 	}
 
 	/**
@@ -89,18 +77,15 @@ public class SteamPlant {
 		this.diviation = diviation;
 	}
 
-	/**
-	 * @return the prefferedOutput
-	 */
-	public double getPrefferedOutput() {
-		return prefferedOutput;
+	@Override
+	protected double getOutput(WeatherReport weatherReport) {
+		return getOutput();
 	}
 
-	/**
-	 * @param prefferedOutput the prefferedOutput to set
-	 */
-	public void setPrefferedOutput(double prefferedOutput) {
-		this.prefferedOutput = prefferedOutput;
+	@Override
+	protected double getOutput(int timeslotIndex,
+			WeatherForecastPrediction weatherForecastPrediction) {
+		return getOutput();
 	}
 	
 	

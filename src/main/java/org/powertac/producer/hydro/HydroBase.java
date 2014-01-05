@@ -3,24 +3,28 @@
  */
 package org.powertac.producer.hydro;
 
+import org.powertac.common.enumerations.PowerType;
+import org.powertac.producer.Producer;
 import org.powertac.producer.utils.Curve;
 
 /**
  * @author Spyros Papageorgiou
  *
  */
-public abstract class HydroBase {
+public abstract class HydroBase extends Producer{
 	protected Curve inputFlow;
 	protected double minFlow;
 	protected double maxFlow;
-	protected double waterDensity = 999.972;
-	protected double g = 9.80665;
+	private static double waterDensity = 999.972;
+	private static double g = 9.80665;
 	protected Curve turbineEfficiency;
 	protected double volume;
-	protected double installedCapacity;
 	protected double height;
 	
-	public HydroBase( Curve inputFlow,double minFlow, double maxFlow,Curve turbineEfficiency,double initialVolume,double installedCapacity,double initialHeight){
+	public HydroBase( String name,Curve inputFlow,double minFlow, double maxFlow,
+			Curve turbineEfficiency,double initialVolume,double initialHeight,double capacity){
+		//no dam production put both on run of the river
+		super(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, capacity);
 		this.inputFlow = inputFlow;
 		this.minFlow = minFlow;
 		this.maxFlow = maxFlow;
@@ -33,17 +37,16 @@ public abstract class HydroBase {
 		if(day < 0 || day > 366)
 			throw new IllegalArgumentException();
 		
-		
-		
 		double waterFlow = getFlow(inputFlow.value(day));
 		
 		double turbEff = turbineEfficiency.value(waterFlow);
 		
-		double power = getWaterPower(turbEff, waterFlow, height);
+		double power = -getWaterPower(turbEff, waterFlow, height);
 		
 		updateVolume(inputFlow.value(day));
 		updateHeigth();
-		
+		if(power > 0)
+			throw new IllegalStateException("I fucked up");
 		return power;
 		
 		
@@ -109,34 +112,6 @@ public abstract class HydroBase {
 	}
 
 	/**
-	 * @return the waterDensity
-	 */
-	public double getWaterDensity() {
-		return waterDensity;
-	}
-
-	/**
-	 * @param waterDensity the waterDensity to set
-	 */
-	public void setWaterDensity(double waterDensity) {
-		this.waterDensity = waterDensity;
-	}
-
-	/**
-	 * @return the g
-	 */
-	public double getG() {
-		return g;
-	}
-
-	/**
-	 * @param g the g to set
-	 */
-	public void setG(double g) {
-		this.g = g;
-	}
-
-	/**
 	 * @return the turbineEfficiency
 	 */
 	public Curve getTurbineEfficiency() {
@@ -162,19 +137,5 @@ public abstract class HydroBase {
 	 */
 	public void setVolume(double volume) {
 		this.volume = volume;
-	}
-
-	/**
-	 * @return the installedCapacity
-	 */
-	public double getInstalledCapacity() {
-		return installedCapacity;
-	}
-
-	/**
-	 * @param installedCapacity the installedCapacity to set
-	 */
-	public void setInstalledCapacity(double installedCapacity) {
-		this.installedCapacity = installedCapacity;
 	}
 }
