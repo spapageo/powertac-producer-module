@@ -7,18 +7,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.powertac.common.IdGenerator;
 import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.enumerations.PowerType;
 import org.powertac.producer.Producer;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+
 /**
  * @author Spyros Papageorgiou
  * 
  */
+@XStreamAlias("solar-farm")
 public class SolarFarm extends Producer
 {
 
+  @XStreamImplicit
   List<PvPanel> panelList = new ArrayList<>();
 
   /**
@@ -27,9 +33,9 @@ public class SolarFarm extends Producer
    * @param profileHours
    * @param capacity
    */
-  public SolarFarm (String name)
+  public SolarFarm ()
   {
-    super(name, PowerType.SOLAR_PRODUCTION, 24, 0);
+    super("Solar farm", PowerType.SOLAR_PRODUCTION, 24, 0);
   }
 
   /**
@@ -93,6 +99,17 @@ public class SolarFarm extends Producer
                         weatherForecastPrediction.getWindSpeed());
     }
     return powerSum;
+  }
+
+  /**
+   * This function is called after de-serialization
+   */
+  protected Object readResolve ()
+  {
+    this.name = "Solar farm";
+    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
+               IdGenerator.createId());
+    return this;
   }
 
 }

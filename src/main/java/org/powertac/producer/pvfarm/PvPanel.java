@@ -6,10 +6,13 @@ package org.powertac.producer.pvfarm;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 /**
  * @author Spyros Papageorgiou
  * 
  */
+@XStreamAlias("panel")
 public class PvPanel
 {
   private double panelArrea;

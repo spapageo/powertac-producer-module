@@ -215,25 +215,6 @@ public class Curve
     }
     return newCurve;
   }
-
-  /**
-   * This function is called after deserialization
-   * @return
-   */
-  protected Object readResolve(){
-    interpolator = new SplineInterpolator();
-    needRebuild = true;
-    
-    if(xy.size() > 0){
-      Iterator<Double> it = xy.keySet().iterator();
-      firstX = it.next();
-      lastX = firstX;
-      while(it.hasNext())
-        lastX = it.next();
-    }
-    
-    return this;
-  }
   
   /**
    * @return the canBeNegative

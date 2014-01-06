@@ -91,7 +91,6 @@ public class CurveTest
     XStream xstr = new XStream();
     xstr.autodetectAnnotations(true);
     String out = xstr.toXML(c);
-    System.out.println(out);
     c = (Curve) xstr.fromXML(out);
     assertTrue(c.needRebuild);
     assertTrue(c.value(1.5) == 10);
