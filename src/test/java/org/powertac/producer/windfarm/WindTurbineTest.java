@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import org.junit.Test;
+import org.powertac.common.RandomSeed;
 import org.powertac.producer.utils.Curve;
 import org.powertac.producer.windfarm.WindTurbine;
 
@@ -69,7 +70,7 @@ public class WindTurbineTest {
 		Curve c = new Curve(x, y);
 		c.setCanBeNegative(false);
 		c.setCustomLastValue(0);
-		WindTurbine wt = new WindTurbine(22, 0.01, -2000, 80, c);
+		WindTurbine wt = new WindTurbine(new RandomSeed("WindTurbineTest", 1, " "),22, 0.01, -2000, 80, c);
 		PrintWriter pw = new PrintWriter(new File("dataGetPowerOutput.txt"));
 		
 
@@ -81,7 +82,7 @@ public class WindTurbineTest {
 			double correctedHourlySpeed = WindTurbine.calculateWindAtAltitude(wt.getHubHeigth(),wt.getSurfaceRoughness(),ua,f,0.4);
 
 			for(int i = 0; i < 10 ; i++){
-				pw.printf("%f,%f,%f%n",correctedHourlySpeed,wt.getPowerOutput(298.15, speed),c.value(correctedHourlySpeed));
+				pw.printf("%f,%f,%f%n",correctedHourlySpeed,-wt.getPowerOutput(298.15, speed),c.value(correctedHourlySpeed));
 			}
 		}
 		

@@ -10,7 +10,7 @@ import static java.lang.Math.*;
  *
  */
 final class ElectricalModel {
-	private ElectricalModel(){};
+	private ElectricalModel(){}
 
 	/**
 	 * Calculate the panel electrical output

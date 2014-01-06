@@ -13,7 +13,7 @@ import java.util.TimeZone;
  *
  */
 final class SolarModel {
-	private SolarModel(){};
+	private SolarModel(){}
 
 	/**
 	 * Calculate the suns azimuth angle during the day
@@ -42,18 +42,12 @@ final class SolarModel {
 		}
 
 		if(solartime <= 12)
-			//			return 180 - toDegrees(acos(
-			//					(sin(toRadians(sunElevation))*sin(toRadians(panelLatitude)) - sin(toRadians(getSunDivergance(day))))
-			//					/ (cos(toRadians(sunElevation))*cos(toRadians(panelLatitude)))
-			//					));
+			//			return 180 - toDegrees(acos(res));
 			return toDegrees(acos(res));
 		else
-			//			return 180 + toDegrees(acos(
-			//					(sin(toRadians(sunElevation))*sin(toRadians(panelLatitude)) - sin(toRadians(getSunDivergance(day))))
-			//					/ (cos(toRadians(sunElevation))*cos(toRadians(panelLatitude)))
-			//					));
+			//			return 180 + toDegrees(acos(res));
 			return 360 - toDegrees(acos(res));
-	};
+	}
 
 	/**
 	 * Calculates the suns divergance/declination at solar noon as a function the day of the year

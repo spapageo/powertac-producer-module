@@ -416,5 +416,5 @@ public class PvPanel {
 	 */
 	public void setCapacity(double capacity) {
 		this.capacity = capacity;
-	};
+	}
 }

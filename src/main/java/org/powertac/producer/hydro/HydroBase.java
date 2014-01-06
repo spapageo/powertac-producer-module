@@ -31,7 +31,7 @@ public abstract class HydroBase extends Producer{
 		this.turbineEfficiency = turbineEfficiency;
 		this.volume = initialVolume;
 		this.height = initialHeight;
-	};
+	}
 	
 	protected double getOutput(int day){
 		if(day < 0 || day > 366)

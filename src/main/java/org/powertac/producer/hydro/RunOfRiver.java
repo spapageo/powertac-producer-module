@@ -21,10 +21,14 @@ public class RunOfRiver extends HydroBase{
 	}
 
 	@Override
-	protected void updateVolume(double inputFlow) {}
+	protected void updateVolume(double inputFlow) {
+	    //no need to do anything
+	}
 
 	@Override
-	protected void updateHeigth() {}
+	protected void updateHeigth() {
+	   // no need to do anything
+	}
 
 	@Override
 	protected double getFlow(double inputFlow) {

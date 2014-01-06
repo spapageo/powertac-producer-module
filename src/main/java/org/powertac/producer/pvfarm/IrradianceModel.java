@@ -13,7 +13,7 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
  *
  */
 final class IrradianceModel {
-	private IrradianceModel(){};
+	private IrradianceModel(){}
 
 	static private PolynomialSplineFunction spline = null;
 

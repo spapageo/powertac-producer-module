@@ -44,14 +44,13 @@ public abstract class Producer extends AbstractCustomer{
 	private static final int TARIFF_COUNT = 5;
 	private static final double BROKER_SWITCH_FACTOR = 0.02;
 
-
 	protected ProducerAccessor producerAccessor;
 	protected WeatherReportRepo weatherReportRepo;
 	protected WeatherForecastRepo weatherForecastRepo;
 	protected TimeslotRepo timeslotService;
 	protected TimeService timeService;
 	protected TariffEvaluator tariffEvaluator;
-	protected TariffEvaluationHelper tariffEvaluationHelper = new TariffEvaluationHelper();;
+	protected TariffEvaluationHelper tariffEvaluationHelper = new TariffEvaluationHelper();
 	protected double preferredOutput;
 	
 	protected TariffSubscription currentSubscription = null;
@@ -117,7 +116,6 @@ public abstract class Producer extends AbstractCustomer{
 			subscriptions.get(0).usePower(power);
 		else
 			log.error("Got empty subscriptions list. We dont have an avtive tariff");
-
 	}
 
 	abstract protected double getOutput(WeatherReport weatherReport);
@@ -161,11 +159,7 @@ public abstract class Producer extends AbstractCustomer{
 																producerAccessor.hours).preferredOutput;
 			}
 		}
-		
-		
-
 	}
-
 
 	/**
 	 * The most important function of this class is to generated the hypothetical load under a specified tariff.
@@ -196,7 +190,8 @@ public abstract class Producer extends AbstractCustomer{
 			//try and collect forecasts for the requested number of hours
 			SortedMap<Integer,WeatherForecastPrediction> predictions = new TreeMap<>();
 			//CARE don't know exactly what is returned here
-			// the past forecast are return
+			// the past forecast are return which aren't very useful because we use past weather to decide for the
+			// future output.
 			List<WeatherForecast> forecasts = parent.weatherForecastRepo.allWeatherForecasts();
 			//add the current forecast in the front
 			forecasts.add(0,weatherForecastRepo.currentWeatherForecast());
@@ -247,7 +242,7 @@ public abstract class Producer extends AbstractCustomer{
 				double[] out = new double[predictions.size()];
 				for(int i = 0; i < out.length; i++){
 					int timeslot = slotIter.next();
-					out[i] = getOutput(timeslot, predictions.get(timeslot));;
+					out[i] = getOutput(timeslot, predictions.get(timeslot));
 				}
 				//calculate the money
 				double money = tariffEvaluationHelper.estimateCost(tariff, out, true);

@@ -55,10 +55,6 @@ public class Dam extends HydroBase{
 	protected void updateHeigth() {
 		height = volumeHeight.value(volume);
 	}
-	
-	protected void setPrefferedOutput(double preferredOut){
-		
-	}
 
 	@Override
 	protected double getOutput(WeatherReport weatherReport) {
