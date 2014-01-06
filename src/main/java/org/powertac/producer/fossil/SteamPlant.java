@@ -5,6 +5,7 @@ package org.powertac.producer.fossil;
 
 import java.util.Random;
 
+import org.powertac.common.IdGenerator;
 import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.enumerations.PowerType;
@@ -22,18 +23,17 @@ public class SteamPlant extends Producer
   private double adjustmentSpeed;
   private double diviation;
   private double lastOutput;
-  private Random rand;
 
-  SteamPlant (String name, double adjustmentSpeed, double diviation,
+  public SteamPlant (double adjustmentSpeed, double diviation,
               double capacity)
   {
     // Maybe change the profile hours
-    super(name, PowerType.FOSSIL_PRODUCTION, 24, capacity);
+    super("Steam plant " + IdGenerator.createId(), PowerType.FOSSIL_PRODUCTION,
+          24, capacity);
     this.lastOutput = capacity;
     this.adjustmentSpeed = adjustmentSpeed;
     this.diviation = diviation;
 
-    rand = new Random();
   }
 
   public double getOutput ()
@@ -47,7 +47,7 @@ public class SteamPlant extends Producer
 
     double outSum = 0.0;
     for (double t = 0.0; t < 60; t++) {
-      outSum += out.value(t) + rand.nextGaussian() * diviation;
+      outSum += out.value(t) + seed.nextGaussian() * diviation;
     }
 
     lastOutput = out.value(60.0);
