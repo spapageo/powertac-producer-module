@@ -17,8 +17,6 @@ public class Dam extends HydroBase{
 	
 	private Curve invCurveOut;
 	
-	private double nextOutput;
-	
 	public Dam(String name,Curve inputFlow, double minFlow, double maxFlow,
 			Curve turbineEfficiency, Curve volumeHeigth, double initialVolume, double capacity) {
 		super(name,inputFlow, minFlow, maxFlow, turbineEfficiency,initialVolume,volumeHeigth.value(initialVolume),capacity);
@@ -46,10 +44,10 @@ public class Dam extends HydroBase{
 
 	@Override
 	protected double getFlow(double inputFlow) {
-		if(nextOutput == upperPowerCap){
+		if(preferredOutput == upperPowerCap){
 			return maxFlow;
 		}else{
-			return invCurveOut.value(nextOutput/height);
+			return invCurveOut.value(preferredOutput/height);
 		}
 	}
 
