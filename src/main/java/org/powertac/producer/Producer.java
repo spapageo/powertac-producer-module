@@ -3,14 +3,17 @@
  */
 package org.powertac.producer;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.powertac.common.AbstractCustomer;
 import org.powertac.common.CustomerInfo;
+import org.powertac.common.IdGenerator;
+import org.powertac.common.RandomSeed;
 import org.powertac.common.Tariff;
 import org.powertac.common.TariffEvaluationHelper;
 import org.powertac.common.TariffEvaluator;
@@ -21,16 +24,22 @@ import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.enumerations.PowerType;
 import org.powertac.common.interfaces.CustomerModelAccessor;
+import org.powertac.common.interfaces.TariffMarket;
+import org.powertac.common.repo.CustomerRepo;
+import org.powertac.common.repo.RandomSeedRepo;
+import org.powertac.common.repo.TariffSubscriptionRepo;
 import org.powertac.common.repo.TimeslotRepo;
 import org.powertac.common.repo.WeatherForecastRepo;
 import org.powertac.common.repo.WeatherReportRepo;
 import org.powertac.common.spring.SpringApplicationContext;
 
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
 /**
  * @author Spyros Papageorgiou
  * 
  */
-public abstract class Producer extends AbstractCustomer
+public abstract class Producer
 {
 
   static protected Logger log = Logger.getLogger(Producer.class.getName());
@@ -45,18 +54,46 @@ public abstract class Producer extends AbstractCustomer
   private static final int TARIFF_COUNT = 5;
   private static final double BROKER_SWITCH_FACTOR = 0.02;
 
-  protected ProducerAccessor producerAccessor;
+  
+  @XStreamOmitField
   protected WeatherReportRepo weatherReportRepo;
+  @XStreamOmitField
   protected WeatherForecastRepo weatherForecastRepo;
+  @XStreamOmitField
   protected TimeslotRepo timeslotService;
+  @XStreamOmitField
   protected TimeService timeService;
+  @XStreamOmitField
+  protected TariffMarket tariffMarketService;
+  @XStreamOmitField
+  protected TariffSubscriptionRepo tariffSubscriptionRepo;
+  @XStreamOmitField
+  protected CustomerRepo customerRepo;
+  @XStreamOmitField
+  protected RandomSeedRepo randomSeedRepo;
+
+  @XStreamOmitField
   protected TariffEvaluator tariffEvaluator;
-  protected TariffEvaluationHelper tariffEvaluationHelper =
-    new TariffEvaluationHelper();
-  protected double preferredOutput;
-
+  @XStreamOmitField
+  protected TariffEvaluationHelper tariffEvaluationHelper;
+  @XStreamOmitField
+  protected RandomSeed seed;
+  @XStreamOmitField
   protected TariffSubscription currentSubscription = null;
+  @XStreamOmitField
+  protected ProducerAccessor producerAccessor;
+  
+  @XStreamOmitField
+  protected double preferredOutput;
+  
+  protected CustomerInfo customerInfo;
+  @XStreamOmitField
+  protected long custId;
+  
+  protected double upperPowerCap;
 
+  protected String name;
+  
   // Percentage increment for the calculation of the preferred output
   double step = 0.1;
 
@@ -75,36 +112,49 @@ public abstract class Producer extends AbstractCustomer
   public Producer (String name, PowerType powerType, int profileHours,
                    double capacity)
   {
-    super(name);
 
     if (capacity >= 0)
       throw new IllegalArgumentException("Positive plant capacity");
 
-    // Initialize the weather report and forecast repositories because they
-    // are not included in the AbstractCustomer
-    weatherReportRepo =
-      (WeatherReportRepo) SpringApplicationContext.getBean("WeatherReportRepo");
-    weatherForecastRepo =
-      (WeatherForecastRepo) SpringApplicationContext
-              .getBean("WeatherForecastRepo");
-    timeslotService =
-      (TimeslotRepo) SpringApplicationContext.getBean("TimeslotRepo");
-    timeService = (TimeService) SpringApplicationContext.getBean("TimeService");
-
-    CustomerInfo customerInfo = new CustomerInfo(name, 1);
+    // Initialize all the repositories
+    weatherReportRepo = (WeatherReportRepo) SpringApplicationContext
+            .getBean("weatherReportRepo");
+    weatherForecastRepo = (WeatherForecastRepo) SpringApplicationContext
+              .getBean("weatherForecastRepo");
+    timeslotService = (TimeslotRepo) SpringApplicationContext
+            .getBean("timeslotService");
+    timeService = (TimeService) SpringApplicationContext
+            .getBean("timeService");
+    customerRepo = (CustomerRepo) SpringApplicationContext
+            .getBean("customerRepo");
+    tariffMarketService = (TariffMarket) SpringApplicationContext
+            .getBean("tariffMarketService");
+    randomSeedRepo = (RandomSeedRepo) SpringApplicationContext
+            .getBean("randomSeedRepo");
+    tariffSubscriptionRepo = (TariffSubscriptionRepo) SpringApplicationContext
+            .getBean("tariffSubscriptionRepo");
+    
+    //Initialize the customer info with population 1
+    customerInfo = new CustomerInfo(name, 1);
     customerInfo.withPowerType(powerType);
-    addCustomerInfo(customerInfo);
+    customerRepo.add(customerInfo);
 
-    ProducerAccessor wrapper = new ProducerAccessor(this, profileHours);
+    //Initialize the random seed
+    seed = randomSeedRepo.getRandomSeed(name, (int) custId, "Misc");
+    
+    //Initialize the evaluation helper and the tariff evaluator
+    tariffEvaluationHelper = new TariffEvaluationHelper();
+    
+    producerAccessor = new ProducerAccessor(this, profileHours);
 
-    tariffEvaluator = new TariffEvaluator(wrapper);
+    tariffEvaluator = new TariffEvaluator(producerAccessor);
 
     tariffEvaluator.initializeInconvenienceFactors(TOU_FACTOR,
                                                    TIERED_RATE_FACTOR,
                                                    VARIABLE_PRICING_FACTOR,
                                                    INTERRUPTIBILITY_FACTOR);
 
-    double weight = rs1.nextDouble() * WEIGHT_INCONVENIENCE;
+    double weight = seed.nextDouble() * WEIGHT_INCONVENIENCE;
 
     tariffEvaluator.withInconvenienceWeight(weight).withInertia(INNERTIA)
             .withRationality(RATIONALITY_FACTOR)
@@ -113,9 +163,9 @@ public abstract class Producer extends AbstractCustomer
 
     this.upperPowerCap = capacity;
     this.preferredOutput = capacity;
+    this.name = name;
   }
 
-  @Override
   public void consumePower ()
   {
     // We need to get the Weather report and
@@ -125,7 +175,7 @@ public abstract class Producer extends AbstractCustomer
 
     List<TariffSubscription> subscriptions =
       tariffSubscriptionRepo
-              .findActiveSubscriptionsForCustomer(getCustomerInfo().get(0));
+              .findActiveSubscriptionsForCustomer(customerInfo);
 
     if (subscriptions.size() > 0)
       subscriptions.get(0).usePower(power);
@@ -139,7 +189,6 @@ public abstract class Producer extends AbstractCustomer
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction);
 
-  @Override
   public void step ()
   {
     // We produce power here for the active tariff
@@ -147,23 +196,22 @@ public abstract class Producer extends AbstractCustomer
     consumePower();
   }
 
-  @Override
   public void subscribeDefault ()
   {
-    super.subscribeDefault();
-
-    List<TariffSubscription> subscriptions =
-      tariffSubscriptionRepo
-              .findActiveSubscriptionsForCustomer(getCustomerInfo().get(0));
-
-    if (subscriptions.size() > 0) {
-      // We have been subscribed
-      currentSubscription = subscriptions.get(0);
+    PowerType type = customerInfo.getPowerType();
+    if (tariffMarketService.getDefaultTariff(type) == null) {
+      log.info("No default Subscription for type " + type.toString() + " of "
+               + this.toString() + " to subscribe to.");
     }
-    else
-      // We could search for tariff with Production power type but it
-      // isn't worth it to change the power type
-      log.error("Got empty subscriptions list. We dont have an avtive tariff");
+    else {
+      tariffMarketService.subscribeToTariff(tariffMarketService
+              .getDefaultTariff(type), customerInfo, customerInfo.getPopulation());
+      currentSubscription = tariffSubscriptionRepo
+      .findActiveSubscriptionsForCustomer(customerInfo).get(0);
+      log.info("CustomerInfo of type " + type.toString() + " of "
+               + this.toString()
+               + " was subscribed to the default broker successfully.");
+    }
   }
 
   public void evaluateNewTariffs ()
@@ -174,7 +222,7 @@ public abstract class Producer extends AbstractCustomer
     // output
     List<TariffSubscription> subscriptions =
       tariffSubscriptionRepo
-              .findActiveSubscriptionsForCustomer(getCustomerInfo().get(0));
+              .findActiveSubscriptionsForCustomer(customerInfo);
 
     if (subscriptions.size() > 0) {
       if (subscriptions.get(0) != currentSubscription) {
@@ -187,6 +235,57 @@ public abstract class Producer extends AbstractCustomer
     }
   }
 
+  /**
+   * This method is called in the deserialization process
+   * @param in
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  private void readObject(ObjectInputStream in) 
+          throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+
+    custId = IdGenerator.createId();
+      
+    seed = randomSeedRepo.getRandomSeed(name, 0,"TariffChooser");
+    
+    // Initialize the weather report and forecast repositories because they
+    // are not included in the AbstractCustomer
+    weatherReportRepo =
+      (WeatherReportRepo) SpringApplicationContext.getBean("WeatherReportRepo");
+    weatherForecastRepo =
+      (WeatherForecastRepo) SpringApplicationContext
+              .getBean("WeatherForecastRepo");
+    timeslotService =
+      (TimeslotRepo) SpringApplicationContext.getBean("TimeslotRepo");
+    timeService = (TimeService) SpringApplicationContext.getBean("TimeService");
+    randomSeedRepo = (RandomSeedRepo) SpringApplicationContext
+            .getBean("randomSeedRepo");
+    customerRepo = (CustomerRepo) SpringApplicationContext
+            .getBean("customerRepo");
+    tariffMarketService = (TariffMarket) SpringApplicationContext
+            .getBean("tariffMarketService");
+    tariffSubscriptionRepo = (TariffSubscriptionRepo) SpringApplicationContext
+            .getBean("tariffSubscriptionRepo");
+
+    tariffEvaluationHelper = new TariffEvaluationHelper();
+    
+    tariffEvaluator = new TariffEvaluator(producerAccessor);
+
+    tariffEvaluator.initializeInconvenienceFactors(TOU_FACTOR,
+                                                   TIERED_RATE_FACTOR,
+                                                   VARIABLE_PRICING_FACTOR,
+                                                   INTERRUPTIBILITY_FACTOR);
+
+    double weight = seed.nextDouble() * WEIGHT_INCONVENIENCE;
+
+    tariffEvaluator.withInconvenienceWeight(weight).withInertia(INNERTIA)
+            .withRationality(RATIONALITY_FACTOR)
+            .withTariffEvalDepth(TARIFF_COUNT)
+            .withTariffSwitchFactor(BROKER_SWITCH_FACTOR);
+
+  }
+  
   /**
    * The most important function of this class is to generated the
    * hypothetical load under a specified tariff. These allows the
@@ -256,7 +355,7 @@ public abstract class Producer extends AbstractCustomer
       Iterator<Integer> slotIter = predictions.keySet().iterator();
 
       // Generate the output
-      // TODO We could check the tariff prices and close the plant down if
+      // We could check the tariff prices and close the plant down if
       // the production costs
       // are greater the the tariff payments. Since production is not an
       // interruptible power type
@@ -303,7 +402,7 @@ public abstract class Producer extends AbstractCustomer
     @Override
     public CustomerInfo getCustomerInfo ()
     {
-      return parent.customerInfos.get(0);
+      return parent.customerInfo;
     }
 
     @Override
@@ -324,13 +423,13 @@ public abstract class Producer extends AbstractCustomer
     @Override
     public double getTariffChoiceSample ()
     {
-      return parent.rs1.nextDouble();
+      return parent.seed.nextDouble();
     }
 
     @Override
     public double getInertiaSample ()
     {
-      return parent.rs1.nextDouble();
+      return parent.seed.nextDouble();
     }
 
   }
