@@ -3,7 +3,7 @@
  */
 package org.powertac.producer.windfarm;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
+import org.powertac.common.RandomSeed;
 import org.powertac.producer.utils.Curve;
 
 import static java.lang.Math.*;
@@ -36,7 +36,9 @@ public class WindTurbine {
 	//The power curve for 15 C at sea level
 	private Curve powerCurve;
 
-	public WindTurbine(double latitude,double surfaceRoughness,double ratedOutput,
+	private RandomSeed rs;
+	
+	public WindTurbine(RandomSeed rs,double latitude,double surfaceRoughness,double ratedOutput,
 			double hubHeigth, Curve powerCurve) {
 		if (ratedOutput >= 0 || latitude < -90 || latitude > 90 || surfaceRoughness <= 0)
 			throw new IllegalArgumentException();
@@ -45,6 +47,7 @@ public class WindTurbine {
 		this.hubHeigth = hubHeigth;
 		this.powerCurve = powerCurve;
 		this.latitude = latitude;
+		this.rs = rs;
 	}
 
 
@@ -59,14 +62,16 @@ public class WindTurbine {
 
 		double std = calculateStd(f, ua, hubHeigth, surfaceRoughness);
 
-		NormalDistribution gauss = new NormalDistribution(correctedHourlySpeed, std);
-
-
 		for(int i = 0; i < 60; i++){
-			sumPowerOutput += calculateAirDensity(temperature, hubHeigth) * powerCurve.value(gauss.sample()) / standardAirDensity;
+			sumPowerOutput += calculateAirDensity(temperature, hubHeigth) *
+					powerCurve.value(sampleGaussian(std,correctedHourlySpeed)) / standardAirDensity;
 		}
 		
 		return -sumPowerOutput/60;
+	}
+	
+	public double sampleGaussian(double std,double mean){
+		return rs.nextGaussian()*std + mean;
 	}
 
 	protected static double calculateStd(double f,double ua,double altitude,double z0){
@@ -74,10 +79,6 @@ public class WindTurbine {
 
 		double h = 1 - 6*f*altitude/ua;
 		double p = pow(h,16);
-
-		assert(ua/(f*z0) != 0);
-		assert(altitude != z0);
-		assert((0.538+0.09*log(altitude/z0)) >= 0);
 
 		double std = 7.5*h*pow((0.538+0.09*log(altitude/z0)),p)*ua / 
 				(1+0.156*log(ua/(f*z0)));
@@ -106,17 +107,10 @@ public class WindTurbine {
 
 
 	protected static double calculateUasterisk(double inputwindspeed,double altitude,double f,double surfaceRoughness,double kappa){
-		assert(altitude > 0);
-		assert(f > 0);
-		assert(surfaceRoughness > 0);
-		assert(inputwindspeed > 0);
-
 		return (inputwindspeed*kappa - 34.5 * f * altitude)/log(altitude/surfaceRoughness);
 	}
 
 	protected static double calulcatef(double latitude){
-		assert(latitude >= -90 && latitude < 90);
-		assert(latitude != 0);
 		return 2 * 7.2 * pow(10,-5)*sin(toRadians(abs(latitude)));
 	}
 
