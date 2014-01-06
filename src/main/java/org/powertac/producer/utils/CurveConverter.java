@@ -18,6 +18,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 public class CurveConverter implements Converter 
 {
 
+  @SuppressWarnings("rawtypes")
   @Override
   public boolean canConvert (Class type)
   {

@@ -3,8 +3,6 @@
  */
 package org.powertac.producer;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.List;
@@ -44,6 +42,8 @@ public abstract class Producer
 
   static protected Logger log = Logger.getLogger(Producer.class.getName());
 
+  // Percentage increment for the calculation of the preferred output
+  private static final double step = 0.1;
   private static final double TOU_FACTOR = 0.05;
   private static final double TIERED_RATE_FACTOR = 0.1;
   private static final double VARIABLE_PRICING_FACTOR = 0.7;
@@ -85,17 +85,16 @@ public abstract class Producer
   
   @XStreamOmitField
   protected double preferredOutput;
-  
+  @XStreamOmitField
   protected CustomerInfo customerInfo;
   @XStreamOmitField
   protected long custId;
   
   protected double upperPowerCap;
-
+  @XStreamOmitField
   protected String name;
   
-  // Percentage increment for the calculation of the preferred output
-  double step = 0.1;
+
 
   /**
    * The constructor of a producer.
@@ -116,6 +115,11 @@ public abstract class Producer
     if (capacity >= 0)
       throw new IllegalArgumentException("Positive plant capacity");
 
+    initialize(name, powerType, profileHours, capacity,IdGenerator.createId());
+  }
+
+  protected void initialize(String name, PowerType powerType, int profileHours,
+                          double capacity, long custId){
     // Initialize all the repositories
     weatherReportRepo = (WeatherReportRepo) SpringApplicationContext
             .getBean("weatherReportRepo");
@@ -139,6 +143,9 @@ public abstract class Producer
     customerInfo.withPowerType(powerType);
     customerRepo.add(customerInfo);
 
+    //Initialize the custom object id
+    this.custId = custId;
+    this.name = name + custId;
     //Initialize the random seed
     seed = randomSeedRepo.getRandomSeed(name, (int) custId, "Misc");
     
@@ -163,9 +170,8 @@ public abstract class Producer
 
     this.upperPowerCap = capacity;
     this.preferredOutput = capacity;
-    this.name = name;
   }
-
+  
   public void consumePower ()
   {
     // We need to get the Weather report and
@@ -234,57 +240,8 @@ public abstract class Producer
       }
     }
   }
-
-  /**
-   * This method is called in the deserialization process
-   * @param in
-   * @throws IOException
-   * @throws ClassNotFoundException
-   */
-  private void readObject(ObjectInputStream in) 
-          throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-
-    custId = IdGenerator.createId();
-      
-    seed = randomSeedRepo.getRandomSeed(name, 0,"TariffChooser");
-    
-    // Initialize the weather report and forecast repositories because they
-    // are not included in the AbstractCustomer
-    weatherReportRepo =
-      (WeatherReportRepo) SpringApplicationContext.getBean("WeatherReportRepo");
-    weatherForecastRepo =
-      (WeatherForecastRepo) SpringApplicationContext
-              .getBean("WeatherForecastRepo");
-    timeslotService =
-      (TimeslotRepo) SpringApplicationContext.getBean("TimeslotRepo");
-    timeService = (TimeService) SpringApplicationContext.getBean("TimeService");
-    randomSeedRepo = (RandomSeedRepo) SpringApplicationContext
-            .getBean("randomSeedRepo");
-    customerRepo = (CustomerRepo) SpringApplicationContext
-            .getBean("customerRepo");
-    tariffMarketService = (TariffMarket) SpringApplicationContext
-            .getBean("tariffMarketService");
-    tariffSubscriptionRepo = (TariffSubscriptionRepo) SpringApplicationContext
-            .getBean("tariffSubscriptionRepo");
-
-    tariffEvaluationHelper = new TariffEvaluationHelper();
-    
-    tariffEvaluator = new TariffEvaluator(producerAccessor);
-
-    tariffEvaluator.initializeInconvenienceFactors(TOU_FACTOR,
-                                                   TIERED_RATE_FACTOR,
-                                                   VARIABLE_PRICING_FACTOR,
-                                                   INTERRUPTIBILITY_FACTOR);
-
-    double weight = seed.nextDouble() * WEIGHT_INCONVENIENCE;
-
-    tariffEvaluator.withInconvenienceWeight(weight).withInertia(INNERTIA)
-            .withRationality(RATIONALITY_FACTOR)
-            .withTariffEvalDepth(TARIFF_COUNT)
-            .withTariffSwitchFactor(BROKER_SWITCH_FACTOR);
-
-  }
+  
+  abstract protected Object readResolve();
   
   /**
    * The most important function of this class is to generated the
@@ -297,7 +254,7 @@ public abstract class Producer
    */
   private class ProducerAccessor implements CustomerModelAccessor
   {
-
+    
     private Producer parent;
     private int hours;
 
@@ -305,7 +262,7 @@ public abstract class Producer
     {
       if (hours <= 0 || parent == null)
         throw new IllegalArgumentException(
-                                           "Negative or zero duration for the Customer profile");
+                         "Negative or zero duration for the Customer profile");
       this.parent = parent;
       this.hours = hours;
     }

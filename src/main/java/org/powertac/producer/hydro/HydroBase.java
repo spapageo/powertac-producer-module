@@ -43,7 +43,7 @@ public abstract class HydroBase extends Producer
 
     double waterFlow = getFlow(inputFlow.value(day));
 
-    double turbEff = turbineEfficiency.value(waterFlow);
+    double turbEff = turbineEfficiency.value(waterFlow/maxFlow);
 
     double power = -getWaterPower(turbEff, waterFlow, height);
 

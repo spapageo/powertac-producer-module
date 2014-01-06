@@ -3,6 +3,7 @@
  */
 package org.powertac.producer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -14,7 +15,6 @@ import org.powertac.common.interfaces.NewTariffListener;
 import org.powertac.common.interfaces.ServerConfiguration;
 import org.powertac.common.interfaces.TariffMarket;
 import org.powertac.common.interfaces.TimeslotPhaseProcessor;
-import org.powertac.common.repo.RandomSeedRepo;
 import org.powertac.common.repo.TimeslotRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,38 +43,57 @@ public class ProducerService extends TimeslotPhaseProcessor
   private ServerConfiguration serverPropertiesService;
 
   @Autowired
-  private RandomSeedRepo randomSeedRepo;
-
-  @Autowired
   private TimeslotRepo timeslotRepo;
 
+  private List<Producer> producerList = new ArrayList<>();
+  
+  public ProducerService ()
+  {
+    super();
+  }
+  
   @Override
   public void setDefaults ()
   {
-    // TODO Auto-generated method stub
-
+    // Nothing to do here
   }
 
   @Override
   public String
     initialize (Competition competition, List<String> completedInits)
   {
-    // TODO Auto-generated method stub
-    return null;
+    int index = completedInits.indexOf("DefaultBroker");
+    if (index == -1) {
+      return null;
+    }
+
+    //TODO this does nothing write now
+    serverPropertiesService.configureMe(this);
+
+    //Clear the list of producers and create new ones
+    producerList.clear();
+
+    tariffMarketService.registerNewTariffListener(this);
+
+    //TODO take care of deserialization and configuration configureMe()
+
+    super.init();
+    
+    return "Producer";
   }
 
   @Override
   public void publishNewTariffs (List<Tariff> tariffs)
   {
-    // TODO Auto-generated method stub
-
+    for (Producer producer: producerList)
+      producer.evaluateNewTariffs();
   }
 
   @Override
   public void activate (Instant time, int phaseNumber)
   {
-    // TODO Auto-generated method stub
-
+    for (Producer producer: producerList)
+      producer.step();
   }
 
 }

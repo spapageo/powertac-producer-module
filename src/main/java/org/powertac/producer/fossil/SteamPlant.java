@@ -3,8 +3,6 @@
  */
 package org.powertac.producer.fossil;
 
-import java.util.Random;
-
 import org.powertac.common.IdGenerator;
 import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
@@ -12,23 +10,28 @@ import org.powertac.common.enumerations.PowerType;
 import org.powertac.producer.Producer;
 import org.powertac.producer.utils.Curve;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
 import static java.lang.Math.*;
 
 /**
  * @author Doom
  * 
  */
+@XStreamAlias("steam-plant")
 public class SteamPlant extends Producer
 {
   private double adjustmentSpeed;
   private double diviation;
+  @XStreamOmitField
   private double lastOutput;
 
   public SteamPlant (double adjustmentSpeed, double diviation,
               double capacity)
   {
     // Maybe change the profile hours
-    super("Steam plant " + IdGenerator.createId(), PowerType.FOSSIL_PRODUCTION,
+    super("Steam plant", PowerType.FOSSIL_PRODUCTION,
           24, capacity);
     this.lastOutput = capacity;
     this.adjustmentSpeed = adjustmentSpeed;
@@ -55,7 +58,18 @@ public class SteamPlant extends Producer
       throw new IllegalStateException("I fucked up");
     return outSum / 60.0;
   }
-
+  
+  /**
+   * This function is called after de-serialization
+   */
+  protected Object readResolve(){
+    this.lastOutput = this.upperPowerCap;
+    this.name = "Steam plant";
+    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
+               IdGenerator.createId());
+    return this;
+  }
+  
   /**
    * @return the adjustmentSpeed
    */

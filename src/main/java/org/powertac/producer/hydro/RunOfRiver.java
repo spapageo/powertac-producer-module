@@ -3,24 +3,28 @@
  */
 package org.powertac.producer.hydro;
 
+import org.powertac.common.IdGenerator;
 import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
+import org.powertac.common.enumerations.PowerType;
 import org.powertac.producer.utils.Curve;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * @author Spyros Papageorgiou
  * 
  */
+@XStreamAlias("run-of-the-river")
 public class RunOfRiver extends HydroBase
 {
 
-  public RunOfRiver (String name, Curve inputFlow, double minFlow,
+  public RunOfRiver (Curve inputFlow, double minFlow,
                      double maxFlow, Curve turbineEfficiency,
-                     double initialVolume, double installedCapacity,
-                     double initialHeight, double capacity)
+                     double initialVolume, double initialHeight, double capacity)
   {
-    super(name, inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
-          initialHeight, capacity);
+    super("Run of the river hydro plant", inputFlow, minFlow, maxFlow,
+          turbineEfficiency, initialVolume, initialHeight, capacity);
   }
 
   @Override
@@ -54,5 +58,15 @@ public class RunOfRiver extends HydroBase
   {
     return getOutput(this.timeslotService.getTimeForIndex(timeslotIndex)
             .toDateTime().getDayOfYear());
+  }
+
+  /**
+   * This function is called after de-serialization
+   */
+  protected Object readResolve(){
+    this.name = "Run of the river hydro plant";
+    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
+               IdGenerator.createId());
+    return this;
   }
 }

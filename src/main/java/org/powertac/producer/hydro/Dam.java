@@ -3,26 +3,32 @@
  */
 package org.powertac.producer.hydro;
 
+import org.powertac.common.IdGenerator;
 import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
+import org.powertac.common.enumerations.PowerType;
 import org.powertac.producer.utils.Curve;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * @author Spyros Papageorgiou
  * 
  */
+@XStreamAlias("dam")
 public class Dam extends HydroBase
 {
 
   private Curve volumeHeight;
-
+  @XStreamOmitField
   private Curve invCurveOut;
 
-  public Dam (String name, Curve inputFlow, double minFlow, double maxFlow,
+  public Dam (Curve inputFlow, double minFlow, double maxFlow,
               Curve turbineEfficiency, Curve volumeHeigth,
               double initialVolume, double capacity)
   {
-    super(name, inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
+    super("Dam", inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
           volumeHeigth.value(initialVolume), capacity);
     this.volumeHeight = volumeHeigth;
 
@@ -32,7 +38,6 @@ public class Dam extends HydroBase
   protected void calculateInvOut ()
   {
     Curve c = new Curve();
-    c.setCanBeNegative(false);
     // calculate inverse curve output function for unit height
     for (double flow = minFlow; flow <= maxFlow; flow +=
       (maxFlow - minFlow) / 10) {
@@ -81,4 +86,14 @@ public class Dam extends HydroBase
             .toDateTime().getDayOfYear());
   }
 
+  /**
+   * This function is called after de-serialization
+   */
+  protected Object readResolve(){
+    this.name = "Dam";
+    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
+               IdGenerator.createId());
+    calculateInvOut();
+    return this;
+  }
 }
