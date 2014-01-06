@@ -33,24 +33,16 @@ public class WindTurbine {
 	// The hub height
 	private double hubHeigth;
 
-	// The speed after which the turbine starts to produce power
-	private double cutInWindSpeed;
-
-	// The speed after which the turbine stops to avoid damage
-	private double cutOutWindSpeed;
-
 	//The power curve for 15 C at sea level
 	private Curve powerCurve;
 
 	public WindTurbine(double latitude,double surfaceRoughness,double ratedOutput,
-			double hubHeigth,double cutInWindSpeed,double cutOutWindSpeed,
-			Curve powerCurve) {
-
+			double hubHeigth, Curve powerCurve) {
+		if (ratedOutput >= 0 || latitude < -90 || latitude > 90 || surfaceRoughness <= 0)
+			throw new IllegalArgumentException();
 		this.surfaceRoughness = surfaceRoughness;
 		this.ratedOutput = ratedOutput;
 		this.hubHeigth = hubHeigth;
-		this.cutInWindSpeed = cutInWindSpeed;
-		this.cutOutWindSpeed = cutOutWindSpeed;
 		this.powerCurve = powerCurve;
 		this.latitude = latitude;
 	}
@@ -74,7 +66,7 @@ public class WindTurbine {
 			sumPowerOutput += calculateAirDensity(temperature, hubHeigth) * powerCurve.value(gauss.sample()) / standardAirDensity;
 		}
 		
-		return sumPowerOutput/60;
+		return -sumPowerOutput/60;
 	}
 
 	protected static double calculateStd(double f,double ua,double altitude,double z0){
@@ -136,13 +128,6 @@ public class WindTurbine {
 	}
 
 	/**
-	 * @param ratedOutput the ratedOutput to set
-	 */
-	public void setRatedOutput(double ratedOutput) {
-		this.ratedOutput = ratedOutput;
-	}
-
-	/**
 	 * @return the hubHeigth
 	 */
 	public double getHubHeigth() {
@@ -150,52 +135,10 @@ public class WindTurbine {
 	}
 
 	/**
-	 * @param hubHeigth the hubHeigth to set
-	 */
-	public void setHubHeigth(double hubHeigth) {
-		this.hubHeigth = hubHeigth;
-	}
-
-	/**
-	 * @return the cutInWindSpeed
-	 */
-	public double getCutInWindSpeed() {
-		return cutInWindSpeed;
-	}
-
-	/**
-	 * @param cutInWindSpeed the cutInWindSpeed to set
-	 */
-	public void setCutInWindSpeed(double cutInWindSpeed) {
-		this.cutInWindSpeed = cutInWindSpeed;
-	}
-
-	/**
-	 * @return the cutOutWindSpeed
-	 */
-	public double getCutOutWindSpeed() {
-		return cutOutWindSpeed;
-	}
-
-	/**
-	 * @param cutOutWindSpeed the cutOutWindSpeed to set
-	 */
-	public void setCutOutWindSpeed(double cutOutWindSpeed) {
-		this.cutOutWindSpeed = cutOutWindSpeed;
-	}
-
-	/**
 	 * @return the curve
 	 */
 	public Curve getPowerCurve() {
 		return powerCurve;
-	}
-
-	/**
-	 * @param curve the curve to set
-	 */
-	public void setPowerCurve(Curve powerCurve) {
-		this.powerCurve = powerCurve;
 	}
 
 	/**
@@ -209,6 +152,8 @@ public class WindTurbine {
 	 * @param refAltitude the refAltitude to set
 	 */
 	public void setRefAltitude(double refAltitude) {
+		if(refAltitude <= 0)
+			throw new IllegalArgumentException("Negative of zero reference altitude.");
 		this.refAltitude = refAltitude;
 	}
 
@@ -217,13 +162,6 @@ public class WindTurbine {
 	 */
 	public double getSurfaceRoughness() {
 		return surfaceRoughness;
-	}
-
-	/**
-	 * @param surfaceRoughness the surfaceRoughness to set
-	 */
-	public void setSurfaceRoughness(double surfaceRoughness) {
-		this.surfaceRoughness = surfaceRoughness;
 	}
 
 	/**
@@ -245,7 +183,17 @@ public class WindTurbine {
 	 * @param kappa the kappa to set
 	 */
 	public void setKappa(double kappa) {
+		if(kappa <= 0)
+			throw new IllegalArgumentException("Negative of zero kappa");
 		this.kappa = kappa;
+	}
+
+
+	/**
+	 * @return the latitude
+	 */
+	public double getLatitude() {
+		return latitude;
 	}
 
 }

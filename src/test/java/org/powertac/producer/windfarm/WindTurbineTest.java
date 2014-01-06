@@ -69,7 +69,7 @@ public class WindTurbineTest {
 		Curve c = new Curve(x, y);
 		c.setCanBeNegative(false);
 		c.setCustomLastValue(0);
-		WindTurbine wt = new WindTurbine(22, 0.01, 2000, 80, 3, 25, c);
+		WindTurbine wt = new WindTurbine(22, 0.01, -2000, 80, c);
 		PrintWriter pw = new PrintWriter(new File("dataGetPowerOutput.txt"));
 		
 
