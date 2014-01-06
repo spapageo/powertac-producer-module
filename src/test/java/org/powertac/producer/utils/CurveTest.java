@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.powertac.producer.utils.Curve;
 
+import com.thoughtworks.xstream.XStream;
+
 public class CurveTest
 {
 
@@ -77,5 +79,23 @@ public class CurveTest
 
     assertTrue(inv.value(25) == 3);
     assertTrue(inv.value(28) == 3);
+  }
+  
+  @Test
+  public void testSerialization(){
+    double[] x = { 1, 1.5, 3, 4, 5 };
+    double[] y = { 5, 10, 25, 20, 5 };
+
+    Curve c = new Curve(x, y);
+    
+    XStream xstr = new XStream();
+    xstr.autodetectAnnotations(true);
+    String out = xstr.toXML(c);
+    System.out.println(out);
+    c = (Curve) xstr.fromXML(out);
+    assertTrue(c.needRebuild);
+    assertTrue(c.value(1.5) == 10);
+    assertTrue(c.getFirstX() == 1);
+    assertTrue(c.getLastX() == 5);
   }
 }

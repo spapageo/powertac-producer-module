@@ -5,17 +5,24 @@ package org.powertac.producer.utils;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static java.lang.Math.signum;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
 /**
  * @author Doom
  * 
  */
+@XStreamAlias("curve")
+@XStreamConverter(CurveConverter.class)
 public class Curve
 {
   // If the spline should return negative values
@@ -37,7 +44,7 @@ public class Curve
   private double lastX = -1;
 
   // The x-y axis of the data
-  private Map<Double, Double> xy = new LinkedHashMap<>();
+  protected LinkedHashMap<Double, Double> xy = new LinkedHashMap<>();
 
   // Need to rebuild the spline
   boolean needRebuild = true;
@@ -213,6 +220,25 @@ public class Curve
   }
 
   /**
+   * This function is called after deserialization
+   * @return
+   */
+  protected Object readResolve(){
+    interpolator = new SplineInterpolator();
+    needRebuild = true;
+    
+    if(xy.size() > 0){
+      Iterator<Double> it = xy.keySet().iterator();
+      firstX = it.next();
+      lastX = firstX;
+      while(it.hasNext())
+        lastX = it.next();
+    }
+    
+    return this;
+  }
+  
+  /**
    * @return the canBeNegative
    */
   public boolean getCanBeNegative ()
@@ -232,7 +258,7 @@ public class Curve
   /**
    * Prolong the last value of the curve
    */
-  public void prolongLastValue ()
+  public void setProlongLastValue ()
   {
     this.prolongLastValue = true;
   }
@@ -244,13 +270,14 @@ public class Curve
    */
   public void setCustomLastValue (double lastValue)
   {
+    this.prolongLastValue = false;
     this.customLastValue = lastValue;
   }
 
   /**
    * Prolong the last value of the curve
    */
-  public void prolongFirstValue ()
+  public void setProlongFirstValue ()
   {
     this.prolongFirstValue = true;
   }
@@ -263,5 +290,54 @@ public class Curve
   public void setCustomFirstValue (double firstValue)
   {
     this.customFirstValue = firstValue;
+    this.prolongFirstValue = false;
+  }
+
+  /**
+   * @return the firstX
+   */
+  public double getFirstX ()
+  {
+    return firstX;
+  }
+
+  /**
+   * @return the lastX
+   */
+  public double getLastX ()
+  {
+    return lastX;
+  }
+
+  /**
+   * @return the prolongLastValue
+   */
+  public boolean getProlongLastValue ()
+  {
+    return prolongLastValue;
+  }
+
+  /**
+   * @return the prolongFirstValue
+   */
+  public boolean getProlongFirstValue ()
+  {
+    return prolongFirstValue;
+  }
+
+  /**
+   * @return the customLastValue
+   */
+  public double getCustomLastValue ()
+  {
+    return customLastValue;
+  }
+
+  /**
+   * @return the customFirstValue
+   */
+  public double getCustomFirstValue ()
+  {
+    return customFirstValue;
   }
 }
