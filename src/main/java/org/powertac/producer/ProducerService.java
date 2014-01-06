@@ -21,55 +21,60 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author Spyros Papageorgiou
- *
+ * 
  */
 @Service
 public class ProducerService extends TimeslotPhaseProcessor
-		implements NewTariffListener, InitializationService {
+  implements NewTariffListener, InitializationService
+{
 
-	  /**
-	   * logger for trace logging -- use log.info(), log.warn(), and log.error()
-	   * appropriately. Use log.debug() for output you want to see in testing or
-	   * debugging.
-	   */
-	  static final private Logger log = Logger.getLogger(ProducerService.class
-	          .getName());
+  /**
+   * logger for trace logging -- use log.info(), log.warn(), and log.error()
+   * appropriately. Use log.debug() for output you want to see in testing or
+   * debugging.
+   */
+  static final private Logger log = Logger.getLogger(ProducerService.class
+          .getName());
 
-	  @Autowired
-	  private TariffMarket tariffMarketService;
+  @Autowired
+  private TariffMarket tariffMarketService;
 
-	  @Autowired
-	  private ServerConfiguration serverPropertiesService;
+  @Autowired
+  private ServerConfiguration serverPropertiesService;
 
-	  @Autowired
-	  private RandomSeedRepo randomSeedRepo;
+  @Autowired
+  private RandomSeedRepo randomSeedRepo;
 
-	  @Autowired
-	  private TimeslotRepo timeslotRepo;
-	
-	@Override
-	public void setDefaults() {
-		// TODO Auto-generated method stub
-		
-	}
+  @Autowired
+  private TimeslotRepo timeslotRepo;
 
-	@Override
-	public String initialize(Competition competition,
-			List<String> completedInits) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public void setDefaults ()
+  {
+    // TODO Auto-generated method stub
 
-	@Override
-	public void publishNewTariffs(List<Tariff> tariffs) {
-		// TODO Auto-generated method stub
-		
-	}
+  }
 
-	@Override
-	public void activate(Instant time, int phaseNumber) {
-		// TODO Auto-generated method stub
-		
-	}
+  @Override
+  public String
+    initialize (Competition competition, List<String> completedInits)
+  {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void publishNewTariffs (List<Tariff> tariffs)
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void activate (Instant time, int phaseNumber)
+  {
+    // TODO Auto-generated method stub
+
+  }
 
 }

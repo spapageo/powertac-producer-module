@@ -6,415 +6,524 @@ package org.powertac.producer.pvfarm;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-
 /**
  * @author Spyros Papageorgiou
- *
+ * 
  */
-public class PvPanel {
-	private double panelArrea;
-	private double panelLatitude;
-	private double panelLongitude;
-	private double panelAzimuth;
-	private double panelTilt;
-	private double panelEfficiency;
-	private double groundAlbedo = 0.2;
-	private double humidity = 0.2;
-	private double ozoneLayerDepth = 3;
-	private double pressure = 101325;
-	private double Ta = 0.95;
-	private double w0 = 0.95;
-	private double p = 0.95;
-	private double q = 0.33;
-	private double r = -1.06;
-	private double s = 0;
-	private double m = 0;
-	private double b = 0.0045;
-	private double Tref = 313.15;
-	private double staticLosses = 0.78;
-	private double clearIndex = 0.2;		
-	private double capacity;
-	
-	public PvPanel(double panelArrea, double panelLatitude,double panelLongitude,double panelAzimuth,
-			double panelTilt, double referenceEfficiency,double capacity){
-		if(panelArrea <= 0 || panelLatitude > 90 || panelLatitude < -90 || panelAzimuth > 360 || panelAzimuth < 0
-				|| panelTilt > 90 || panelTilt < 0 || referenceEfficiency < 0 || capacity > 0)
-			throw new IllegalArgumentException();
-		this.panelArrea = panelArrea;
-		this.panelLatitude = panelLatitude;
-		this.panelLongitude = panelLongitude;
-		this.panelAzimuth = panelAzimuth;
-		this.panelTilt = panelTilt;
-		this.panelEfficiency = referenceEfficiency;
-		this.capacity = capacity;
-	}
+public class PvPanel
+{
+  private double panelArrea;
+  private double panelLatitude;
+  private double panelLongitude;
+  private double panelAzimuth;
+  private double panelTilt;
+  private double panelEfficiency;
+  private double groundAlbedo = 0.2;
+  private double humidity = 0.2;
+  private double ozoneLayerDepth = 3;
+  private double pressure = 101325;
+  private double Ta = 0.95;
+  private double w0 = 0.95;
+  private double p = 0.95;
+  private double q = 0.33;
+  private double r = -1.06;
+  private double s = 0;
+  private double m = 0;
+  private double b = 0.0045;
+  private double Tref = 313.15;
+  private double staticLosses = 0.78;
+  private double clearIndex = 0.2;
+  private double capacity;
 
-	public double getOutput(long systemTime,TimeZone timezone,double cloudcover,double temperature,double windspeed){
-		//assuming duration of one hour
-		//do the calculations once for every minute
-		Calendar cal = Calendar.getInstance(timezone);
-		
-		cal.setTimeInMillis(systemTime);
+  public PvPanel (double panelArrea, double panelLatitude,
+                  double panelLongitude, double panelAzimuth, double panelTilt,
+                  double referenceEfficiency, double capacity)
+  {
+    if (panelArrea <= 0 || panelLatitude > 90 || panelLatitude < -90
+        || panelAzimuth > 360 || panelAzimuth < 0 || panelTilt > 90
+        || panelTilt < 0 || referenceEfficiency < 0 || capacity > 0)
+      throw new IllegalArgumentException();
+    this.panelArrea = panelArrea;
+    this.panelLatitude = panelLatitude;
+    this.panelLongitude = panelLongitude;
+    this.panelAzimuth = panelAzimuth;
+    this.panelTilt = panelTilt;
+    this.panelEfficiency = referenceEfficiency;
+    this.capacity = capacity;
+  }
 
-		int timezoneOffset = cal.get(Calendar.ZONE_OFFSET)/(60*60*1000);
-		double sum = 0;
+  public double getOutput (long systemTime, TimeZone timezone,
+                           double cloudcover, double temperature,
+                           double windspeed)
+  {
+    // assuming duration of one hour
+    // do the calculations once for every minute
+    Calendar cal = Calendar.getInstance(timezone);
 
-		for(int i = 0; i < 60; i++ ){
-			//calculate solar time
-			double solarTime = SolarModel.getSolarTime(panelLongitude,timezoneOffset, cal.getTimeInMillis());
-			//calculate sun position
-			double sunAltitude = SolarModel.getSunAltitudeAngle(solarTime, panelLatitude, cal.get(Calendar.DAY_OF_YEAR));
-			sunAltitude = sunAltitude + SolarModel.getSunAltitudeCorrection(sunAltitude, pressure, temperature);
-			double sunAzimuth = SolarModel.getSunAzinuthAngle(sunAltitude, cal.get(Calendar.DAY_OF_YEAR), panelLatitude, solarTime);
+    cal.setTimeInMillis(systemTime);
 
-			if(sunAltitude > 0){
-				//calculate irradiance
-				double inci = SolarModel.getIncidenceAngle(sunAltitude, sunAzimuth, panelAzimuth , panelTilt);
-				double airmass = IrradianceModel.getAirMass(sunAltitude);
+    int timezoneOffset = cal.get(Calendar.ZONE_OFFSET) / (60 * 60 * 1000);
+    double sum = 0;
 
-				double T0 = IrradianceModel.getT0(airmass, ozoneLayerDepth);
-				
-				double Tr = IrradianceModel.getTr(airmass);
-				
-				double aw = IrradianceModel.getaw(airmass, humidity, temperature);
-				
-				double f = IrradianceModel.getf(sunAltitude);
-				
-				double solarConstanct = IrradianceModel.getIrradianceConstant(cal.get(Calendar.DAY_OF_YEAR));
-				
-				double dir = IrradianceModel.getDirectIrradiance(sunAltitude, solarConstanct, T0, Tr, aw, Ta);
-				double dif = IrradianceModel.getDiffuseIrradiance(sunAltitude, solarConstanct, T0, Tr, aw, Ta, w0, f);
-				
-				dir = IrradianceModel.getCloudModifiedIrradiance(dir, cloudcover, groundAlbedo, p, q,  r, s, m);
-				dif = IrradianceModel.getCloudModifiedIrradiance(dif, cloudcover, groundAlbedo, p, q,  r, s, m);
+    for (int i = 0; i < 60; i++) {
+      // calculate solar time
+      double solarTime =
+        SolarModel.getSolarTime(panelLongitude, timezoneOffset,
+                                cal.getTimeInMillis());
+      // calculate sun position
+      double sunAltitude =
+        SolarModel.getSunAltitudeAngle(solarTime, panelLatitude,
+                                       cal.get(Calendar.DAY_OF_YEAR));
+      sunAltitude =
+        sunAltitude
+                + SolarModel.getSunAltitudeCorrection(sunAltitude, pressure,
+                                                      temperature);
+      double sunAzimuth =
+        SolarModel.getSunAzinuthAngle(sunAltitude,
+                                      cal.get(Calendar.DAY_OF_YEAR),
+                                      panelLatitude, solarTime);
 
-				double inputIrrad;
-				if(inci <= 90){
-					inputIrrad = IrradianceModel.getIrradiancOnTiltedPlane(dir, dif, inci, sunAltitude, panelTilt, groundAlbedo);
-				}else{
-					inputIrrad = IrradianceModel.getIrradiancOnTiltedPlane(0, dif, inci, sunAltitude, panelTilt, groundAlbedo);
-				}
-				
-				double panelTemperature = ElectricalModel.getPanelTemperature(temperature,windspeed,inputIrrad);
-				double thermaLosCoeff = ElectricalModel.getThermalLossCoeff(b,panelTemperature,Tref);
-				double reflectiveLosCoeff = ElectricalModel.getReflectiveLossCoeff(inci, clearIndex);
-				
-				double output = ElectricalModel.getElectricalOutput(panelEfficiency, staticLosses, thermaLosCoeff, reflectiveLosCoeff, inputIrrad, panelArrea);
-				
-				sum = sum + output;
-			}
-			cal.add(Calendar.MINUTE, 1);
-		}
+      if (sunAltitude > 0) {
+        // calculate irradiance
+        double inci =
+          SolarModel.getIncidenceAngle(sunAltitude, sunAzimuth, panelAzimuth,
+                                       panelTilt);
+        double airmass = IrradianceModel.getAirMass(sunAltitude);
 
+        double T0 = IrradianceModel.getT0(airmass, ozoneLayerDepth);
 
-		return -sum/60;
-	}
+        double Tr = IrradianceModel.getTr(airmass);
 
-	/**
-	 * @return the panelArrea
-	 */
-	public double getPanelArrea() {
-		return panelArrea;
-	}
+        double aw = IrradianceModel.getaw(airmass, humidity, temperature);
 
-	/**
-	 * @param panelArrea the panelArrea to set
-	 */
-	public void setPanelArrea(double panelArrea) {
-		this.panelArrea = panelArrea;
-	}
+        double f = IrradianceModel.getf(sunAltitude);
 
-	/**
-	 * @return the panelLatitude
-	 */
-	public double getPanelLatitude() {
-		return panelLatitude;
-	}
+        double solarConstanct =
+          IrradianceModel.getIrradianceConstant(cal.get(Calendar.DAY_OF_YEAR));
 
-	/**
-	 * @param panelLatitude the panelLatitude to set
-	 */
-	public void setPanelLatitude(double panelLatitude) {
-		this.panelLatitude = panelLatitude;
-	}
+        double dir =
+          IrradianceModel.getDirectIrradiance(sunAltitude, solarConstanct, T0,
+                                              Tr, aw, Ta);
+        double dif =
+          IrradianceModel.getDiffuseIrradiance(sunAltitude, solarConstanct, T0,
+                                               Tr, aw, Ta, w0, f);
 
-	/**
-	 * @return the panelLongitude
-	 */
-	public double getPanelLongitude() {
-		return panelLongitude;
-	}
+        dir =
+          IrradianceModel.getCloudModifiedIrradiance(dir, cloudcover,
+                                                     groundAlbedo, p, q, r, s,
+                                                     m);
+        dif =
+          IrradianceModel.getCloudModifiedIrradiance(dif, cloudcover,
+                                                     groundAlbedo, p, q, r, s,
+                                                     m);
 
-	/**
-	 * @param panelLongitude the panelLongitude to set
-	 */
-	public void setPanelLongitude(double panelLongitude) {
-		this.panelLongitude = panelLongitude;
-	}
+        double inputIrrad;
+        if (inci <= 90) {
+          inputIrrad =
+            IrradianceModel.getIrradiancOnTiltedPlane(dir, dif, inci,
+                                                      sunAltitude, panelTilt,
+                                                      groundAlbedo);
+        }
+        else {
+          inputIrrad =
+            IrradianceModel.getIrradiancOnTiltedPlane(0, dif, inci,
+                                                      sunAltitude, panelTilt,
+                                                      groundAlbedo);
+        }
 
-	/**
-	 * @return the panelAzimuth
-	 */
-	public double getPanelAzimuth() {
-		return panelAzimuth;
-	}
+        double panelTemperature =
+          ElectricalModel.getPanelTemperature(temperature, windspeed,
+                                              inputIrrad);
+        double thermaLosCoeff =
+          ElectricalModel.getThermalLossCoeff(b, panelTemperature, Tref);
+        double reflectiveLosCoeff =
+          ElectricalModel.getReflectiveLossCoeff(inci, clearIndex);
 
-	/**
-	 * @param panelAzimuth the panelAzimuth to set
-	 */
-	public void setPanelAzimuth(double panelAzimuth) {
-		this.panelAzimuth = panelAzimuth;
-	}
+        double output =
+          ElectricalModel.getElectricalOutput(panelEfficiency, staticLosses,
+                                              thermaLosCoeff,
+                                              reflectiveLosCoeff, inputIrrad,
+                                              panelArrea);
 
-	/**
-	 * @return the panelTilt
-	 */
-	public double getPanelTilt() {
-		return panelTilt;
-	}
+        sum = sum + output;
+      }
+      cal.add(Calendar.MINUTE, 1);
+    }
 
-	/**
-	 * @param panelTilt the panelTilt to set
-	 */
-	public void setPanelTilt(double panelTilt) {
-		this.panelTilt = panelTilt;
-	}
+    return -sum / 60;
+  }
 
-	/**
-	 * @return the panelEfficiency
-	 */
-	public double getPanelEfficiency() {
-		return panelEfficiency;
-	}
+  /**
+   * @return the panelArrea
+   */
+  public double getPanelArrea ()
+  {
+    return panelArrea;
+  }
 
-	/**
-	 * @param panelEfficiency the panelEfficiency to set
-	 */
-	public void setPanelEfficiency(double panelEfficiency) {
-		this.panelEfficiency = panelEfficiency;
-	}
+  /**
+   * @param panelArrea
+   *          the panelArrea to set
+   */
+  public void setPanelArrea (double panelArrea)
+  {
+    this.panelArrea = panelArrea;
+  }
 
-	/**
-	 * @return the groundAlbedo
-	 */
-	public double getGroundAlbedo() {
-		return groundAlbedo;
-	}
+  /**
+   * @return the panelLatitude
+   */
+  public double getPanelLatitude ()
+  {
+    return panelLatitude;
+  }
 
-	/**
-	 * @param groundAlbedo the groundAlbedo to set
-	 */
-	public void setGroundAlbedo(double groundAlbedo) {
-		this.groundAlbedo = groundAlbedo;
-	}
+  /**
+   * @param panelLatitude
+   *          the panelLatitude to set
+   */
+  public void setPanelLatitude (double panelLatitude)
+  {
+    this.panelLatitude = panelLatitude;
+  }
 
-	/**
-	 * @return the humidity
-	 */
-	public double getHumidity() {
-		return humidity;
-	}
+  /**
+   * @return the panelLongitude
+   */
+  public double getPanelLongitude ()
+  {
+    return panelLongitude;
+  }
 
-	/**
-	 * @param humidity the humidity to set
-	 */
-	public void setHumidity(double humidity) {
-		this.humidity = humidity;
-	}
+  /**
+   * @param panelLongitude
+   *          the panelLongitude to set
+   */
+  public void setPanelLongitude (double panelLongitude)
+  {
+    this.panelLongitude = panelLongitude;
+  }
 
-	/**
-	 * @return the ozoneLayerDepth
-	 */
-	public double getOzoneLayerDepth() {
-		return ozoneLayerDepth;
-	}
+  /**
+   * @return the panelAzimuth
+   */
+  public double getPanelAzimuth ()
+  {
+    return panelAzimuth;
+  }
 
-	/**
-	 * @param ozoneLayerDepth the ozoneLayerDepth to set
-	 */
-	public void setOzoneLayerDepth(double ozoneLayerDepth) {
-		this.ozoneLayerDepth = ozoneLayerDepth;
-	}
+  /**
+   * @param panelAzimuth
+   *          the panelAzimuth to set
+   */
+  public void setPanelAzimuth (double panelAzimuth)
+  {
+    this.panelAzimuth = panelAzimuth;
+  }
 
-	/**
-	 * @return the pressure
-	 */
-	public double getPressure() {
-		return pressure;
-	}
+  /**
+   * @return the panelTilt
+   */
+  public double getPanelTilt ()
+  {
+    return panelTilt;
+  }
 
-	/**
-	 * @param pressure the pressure to set
-	 */
-	public void setPressure(double pressure) {
-		this.pressure = pressure;
-	}
+  /**
+   * @param panelTilt
+   *          the panelTilt to set
+   */
+  public void setPanelTilt (double panelTilt)
+  {
+    this.panelTilt = panelTilt;
+  }
 
-	/**
-	 * @return the ta
-	 */
-	public double getTa() {
-		return Ta;
-	}
+  /**
+   * @return the panelEfficiency
+   */
+  public double getPanelEfficiency ()
+  {
+    return panelEfficiency;
+  }
 
-	/**
-	 * @param ta the ta to set
-	 */
-	public void setTa(double ta) {
-		Ta = ta;
-	}
+  /**
+   * @param panelEfficiency
+   *          the panelEfficiency to set
+   */
+  public void setPanelEfficiency (double panelEfficiency)
+  {
+    this.panelEfficiency = panelEfficiency;
+  }
 
-	/**
-	 * @return the w0
-	 */
-	public double getW0() {
-		return w0;
-	}
+  /**
+   * @return the groundAlbedo
+   */
+  public double getGroundAlbedo ()
+  {
+    return groundAlbedo;
+  }
 
-	/**
-	 * @param w0 the w0 to set
-	 */
-	public void setW0(double w0) {
-		this.w0 = w0;
-	}
+  /**
+   * @param groundAlbedo
+   *          the groundAlbedo to set
+   */
+  public void setGroundAlbedo (double groundAlbedo)
+  {
+    this.groundAlbedo = groundAlbedo;
+  }
 
-	/**
-	 * @return the p
-	 */
-	public double getP() {
-		return p;
-	}
+  /**
+   * @return the humidity
+   */
+  public double getHumidity ()
+  {
+    return humidity;
+  }
 
-	/**
-	 * @param p the p to set
-	 */
-	public void setP(double p) {
-		this.p = p;
-	}
+  /**
+   * @param humidity
+   *          the humidity to set
+   */
+  public void setHumidity (double humidity)
+  {
+    this.humidity = humidity;
+  }
 
-	/**
-	 * @return the q
-	 */
-	public double getQ() {
-		return q;
-	}
+  /**
+   * @return the ozoneLayerDepth
+   */
+  public double getOzoneLayerDepth ()
+  {
+    return ozoneLayerDepth;
+  }
 
-	/**
-	 * @param q the q to set
-	 */
-	public void setQ(double q) {
-		this.q = q;
-	}
+  /**
+   * @param ozoneLayerDepth
+   *          the ozoneLayerDepth to set
+   */
+  public void setOzoneLayerDepth (double ozoneLayerDepth)
+  {
+    this.ozoneLayerDepth = ozoneLayerDepth;
+  }
 
-	/**
-	 * @return the r
-	 */
-	public double getR() {
-		return r;
-	}
+  /**
+   * @return the pressure
+   */
+  public double getPressure ()
+  {
+    return pressure;
+  }
 
-	/**
-	 * @param r the r to set
-	 */
-	public void setR(double r) {
-		this.r = r;
-	}
+  /**
+   * @param pressure
+   *          the pressure to set
+   */
+  public void setPressure (double pressure)
+  {
+    this.pressure = pressure;
+  }
 
-	/**
-	 * @return the s
-	 */
-	public double getS() {
-		return s;
-	}
+  /**
+   * @return the ta
+   */
+  public double getTa ()
+  {
+    return Ta;
+  }
 
-	/**
-	 * @param s the s to set
-	 */
-	public void setS(double s) {
-		this.s = s;
-	}
+  /**
+   * @param ta
+   *          the ta to set
+   */
+  public void setTa (double ta)
+  {
+    Ta = ta;
+  }
 
-	/**
-	 * @return the m
-	 */
-	public double getM() {
-		return m;
-	}
+  /**
+   * @return the w0
+   */
+  public double getW0 ()
+  {
+    return w0;
+  }
 
-	/**
-	 * @param m the m to set
-	 */
-	public void setM(double m) {
-		this.m = m;
-	}
+  /**
+   * @param w0
+   *          the w0 to set
+   */
+  public void setW0 (double w0)
+  {
+    this.w0 = w0;
+  }
 
-	/**
-	 * @return the b
-	 */
-	public double getB() {
-		return b;
-	}
+  /**
+   * @return the p
+   */
+  public double getP ()
+  {
+    return p;
+  }
 
-	/**
-	 * @param b the b to set
-	 */
-	public void setB(double b) {
-		this.b = b;
-	}
+  /**
+   * @param p
+   *          the p to set
+   */
+  public void setP (double p)
+  {
+    this.p = p;
+  }
 
-	/**
-	 * @return the tref
-	 */
-	public double getTref() {
-		return Tref;
-	}
+  /**
+   * @return the q
+   */
+  public double getQ ()
+  {
+    return q;
+  }
 
-	/**
-	 * @param tref the tref to set
-	 */
-	public void setTref(double tref) {
-		Tref = tref;
-	}
+  /**
+   * @param q
+   *          the q to set
+   */
+  public void setQ (double q)
+  {
+    this.q = q;
+  }
 
-	/**
-	 * @return the staticLosses
-	 */
-	public double getStaticLosses() {
-		return staticLosses;
-	}
+  /**
+   * @return the r
+   */
+  public double getR ()
+  {
+    return r;
+  }
 
-	/**
-	 * @param staticLosses the staticLosses to set
-	 */
-	public void setStaticLosses(double staticLosses) {
-		this.staticLosses = staticLosses;
-	}
+  /**
+   * @param r
+   *          the r to set
+   */
+  public void setR (double r)
+  {
+    this.r = r;
+  }
 
-	/**
-	 * @return the clearIndex
-	 */
-	public double getClearIndex() {
-		return clearIndex;
-	}
+  /**
+   * @return the s
+   */
+  public double getS ()
+  {
+    return s;
+  }
 
-	/**
-	 * @param clearIndex the clearIndex to set
-	 */
-	public void setClearIndex(double clearIndex) {
-		this.clearIndex = clearIndex;
-	}
+  /**
+   * @param s
+   *          the s to set
+   */
+  public void setS (double s)
+  {
+    this.s = s;
+  }
 
-	/**
-	 * @return the capacity
-	 */
-	public double getCapacity() {
-		return capacity;
-	}
+  /**
+   * @return the m
+   */
+  public double getM ()
+  {
+    return m;
+  }
 
-	/**
-	 * @param capacity the capacity to set
-	 */
-	public void setCapacity(double capacity) {
-		this.capacity = capacity;
-	}
+  /**
+   * @param m
+   *          the m to set
+   */
+  public void setM (double m)
+  {
+    this.m = m;
+  }
+
+  /**
+   * @return the b
+   */
+  public double getB ()
+  {
+    return b;
+  }
+
+  /**
+   * @param b
+   *          the b to set
+   */
+  public void setB (double b)
+  {
+    this.b = b;
+  }
+
+  /**
+   * @return the tref
+   */
+  public double getTref ()
+  {
+    return Tref;
+  }
+
+  /**
+   * @param tref
+   *          the tref to set
+   */
+  public void setTref (double tref)
+  {
+    Tref = tref;
+  }
+
+  /**
+   * @return the staticLosses
+   */
+  public double getStaticLosses ()
+  {
+    return staticLosses;
+  }
+
+  /**
+   * @param staticLosses
+   *          the staticLosses to set
+   */
+  public void setStaticLosses (double staticLosses)
+  {
+    this.staticLosses = staticLosses;
+  }
+
+  /**
+   * @return the clearIndex
+   */
+  public double getClearIndex ()
+  {
+    return clearIndex;
+  }
+
+  /**
+   * @param clearIndex
+   *          the clearIndex to set
+   */
+  public void setClearIndex (double clearIndex)
+  {
+    this.clearIndex = clearIndex;
+  }
+
+  /**
+   * @return the capacity
+   */
+  public double getCapacity ()
+  {
+    return capacity;
+  }
+
+  /**
+   * @param capacity
+   *          the capacity to set
+   */
+  public void setCapacity (double capacity)
+  {
+    this.capacity = capacity;
+  }
 }
