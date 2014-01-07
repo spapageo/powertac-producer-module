@@ -256,4 +256,44 @@ public class WindTurbine
     this.rs = rs;
   }
 
+  /**
+   * @param latitude the latitude to set
+   */
+  public void setLatitude (double latitude)
+  {
+    this.latitude = latitude;
+  }
+
+  /**
+   * @param surfaceRoughness the surfaceRoughness to set
+   */
+  public void setSurfaceRoughness (double surfaceRoughness)
+  {
+    this.surfaceRoughness = surfaceRoughness;
+  }
+
+  /**
+   * @param ratedOutput the ratedOutput to set
+   */
+  public void setRatedOutput (double ratedOutput)
+  {
+    this.ratedOutput = ratedOutput;
+  }
+
+  /**
+   * @param hubHeigth the hubHeigth to set
+   */
+  public void setHubHeigth (double hubHeigth)
+  {
+    this.hubHeigth = hubHeigth;
+  }
+
+  /**
+   * @param powerCurve the powerCurve to set
+   */
+  public void setPowerCurve (Curve powerCurve)
+  {
+    this.powerCurve = powerCurve;
+  }
+
 }

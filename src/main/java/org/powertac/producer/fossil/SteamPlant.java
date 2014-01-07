@@ -79,29 +79,11 @@ public class SteamPlant extends Producer
   }
 
   /**
-   * @param adjustmentSpeed
-   *          the adjustmentSpeed to set
-   */
-  public void setAdjustmentSpeed (double adjustmentSpeed)
-  {
-    this.adjustmentSpeed = adjustmentSpeed;
-  }
-
-  /**
    * @return the diviation
    */
   public double getDiviation ()
   {
     return diviation;
-  }
-
-  /**
-   * @param diviation
-   *          the diviation to set
-   */
-  public void setDiviation (double diviation)
-  {
-    this.diviation = diviation;
   }
 
   @Override
@@ -116,6 +98,22 @@ public class SteamPlant extends Producer
                WeatherForecastPrediction weatherForecastPrediction)
   {
     return getOutput();
+  }
+
+  /**
+   * @param adjustmentSpeed the adjustmentSpeed to set
+   */
+  public void setAdjustmentSpeed (double adjustmentSpeed)
+  {
+    this.adjustmentSpeed = adjustmentSpeed;
+  }
+
+  /**
+   * @param diviation the diviation to set
+   */
+  public void setDiviation (double diviation)
+  {
+    this.diviation = diviation;
   }
 
 }

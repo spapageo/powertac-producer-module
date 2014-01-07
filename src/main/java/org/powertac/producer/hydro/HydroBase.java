@@ -81,29 +81,11 @@ public abstract class HydroBase extends Producer
   }
 
   /**
-   * @param inputFlow
-   *          the inputFlow to set
-   */
-  public void setInputFlow (Curve inputFlow)
-  {
-    this.inputFlow = inputFlow;
-  }
-
-  /**
    * @return the minFlow
    */
   public double getMinFlow ()
   {
     return minFlow;
-  }
-
-  /**
-   * @param minFlow
-   *          the minFlow to set
-   */
-  public void setMinFlow (double minFlow)
-  {
-    this.minFlow = minFlow;
   }
 
   /**
@@ -115,29 +97,11 @@ public abstract class HydroBase extends Producer
   }
 
   /**
-   * @param maxFlow
-   *          the maxFlow to set
-   */
-  public void setMaxFlow (double maxFlow)
-  {
-    this.maxFlow = maxFlow;
-  }
-
-  /**
    * @return the turbineEfficiency
    */
   public Curve getTurbineEfficiency ()
   {
     return turbineEfficiency;
-  }
-
-  /**
-   * @param turbineEfficiency
-   *          the turbineEfficiency to set
-   */
-  public void setTurbineEfficiency (Curve turbineEfficiency)
-  {
-    this.turbineEfficiency = turbineEfficiency;
   }
 
   /**
@@ -149,11 +113,58 @@ public abstract class HydroBase extends Producer
   }
 
   /**
-   * @param volume
-   *          the volume to set
+   * @return the height
+   */
+  public double getHeight ()
+  {
+    return height;
+  }
+
+  /**
+   * @param inputFlow the inputFlow to set
+   */
+  public void setInputFlow (Curve inputFlow)
+  {
+    this.inputFlow = inputFlow;
+  }
+
+  /**
+   * @param minFlow the minFlow to set
+   */
+  public void setMinFlow (double minFlow)
+  {
+    this.minFlow = minFlow;
+  }
+
+  /**
+   * @param maxFlow the maxFlow to set
+   */
+  public void setMaxFlow (double maxFlow)
+  {
+    this.maxFlow = maxFlow;
+  }
+
+  /**
+   * @param turbineEfficiency the turbineEfficiency to set
+   */
+  public void setTurbineEfficiency (Curve turbineEfficiency)
+  {
+    this.turbineEfficiency = turbineEfficiency;
+  }
+
+  /**
+   * @param volume the volume to set
    */
   public void setVolume (double volume)
   {
     this.volume = volume;
+  }
+
+  /**
+   * @param height the height to set
+   */
+  public void setHeight (double height)
+  {
+    this.height = height;
   }
 }

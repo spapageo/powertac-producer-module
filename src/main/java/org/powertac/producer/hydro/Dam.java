@@ -96,4 +96,28 @@ public class Dam extends HydroBase
     calculateInvOut();
     return this;
   }
+
+  /**
+   * @return the volumeHeight
+   */
+  public Curve getVolumeHeight ()
+  {
+    return volumeHeight;
+  }
+
+  /**
+   * @return the invCurveOut
+   */
+  public Curve getInvCurveOut ()
+  {
+    return invCurveOut;
+  }
+
+  /**
+   * @param volumeHeight the volumeHeight to set
+   */
+  public void setVolumeHeight (Curve volumeHeight)
+  {
+    this.volumeHeight = volumeHeight;
+  }
 }

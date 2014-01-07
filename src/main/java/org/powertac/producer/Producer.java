@@ -112,7 +112,7 @@ public abstract class Producer
                    double capacity)
   {
 
-    if (capacity >= 0)
+    if (capacity > 0)
       throw new IllegalArgumentException("Positive plant capacity");
 
     initialize(name, powerType, profileHours, capacity,IdGenerator.createId());
@@ -404,5 +404,253 @@ public abstract class Producer
 
     double preferredOutput = 0;
     double[] output = null;
+  }
+
+  /**
+   * @return the custId
+   */
+  public long getCustId ()
+  {
+    return custId;
+  }
+
+  /**
+   * @param custId the custId to set
+   */
+  public void setCustId (long custId)
+  {
+    this.custId = custId;
+  }
+
+  /**
+   * @return the upperPowerCap
+   */
+  public double getUpperPowerCap ()
+  {
+    return upperPowerCap;
+  }
+
+  /**
+   * @param upperPowerCap the upperPowerCap to set
+   */
+  public void setUpperPowerCap (double upperPowerCap)
+  {
+    this.upperPowerCap = upperPowerCap;
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName ()
+  {
+    return name;
+  }
+
+  /**
+   * @param name the name to set
+   */
+  public void setName (String name)
+  {
+    this.name = name;
+  }
+
+  /**
+   * @return the step
+   */
+  public static double getStep ()
+  {
+    return step;
+  }
+
+  /**
+   * @return the touFactor
+   */
+  public static double getTouFactor ()
+  {
+    return TOU_FACTOR;
+  }
+
+  /**
+   * @return the tieredRateFactor
+   */
+  public static double getTieredRateFactor ()
+  {
+    return TIERED_RATE_FACTOR;
+  }
+
+  /**
+   * @return the variablePricingFactor
+   */
+  public static double getVariablePricingFactor ()
+  {
+    return VARIABLE_PRICING_FACTOR;
+  }
+
+  /**
+   * @return the interruptibilityFactor
+   */
+  public static double getInterruptibilityFactor ()
+  {
+    return INTERRUPTIBILITY_FACTOR;
+  }
+
+  /**
+   * @return the weightInconvenience
+   */
+  public static double getWeightInconvenience ()
+  {
+    return WEIGHT_INCONVENIENCE;
+  }
+
+  /**
+   * @return the innertia
+   */
+  public static double getInnertia ()
+  {
+    return INNERTIA;
+  }
+
+  /**
+   * @return the rationalityFactor
+   */
+  public static double getRationalityFactor ()
+  {
+    return RATIONALITY_FACTOR;
+  }
+
+  /**
+   * @return the tariffCount
+   */
+  public static int getTariffCount ()
+  {
+    return TARIFF_COUNT;
+  }
+
+  /**
+   * @return the brokerSwitchFactor
+   */
+  public static double getBrokerSwitchFactor ()
+  {
+    return BROKER_SWITCH_FACTOR;
+  }
+
+  /**
+   * @return the weatherReportRepo
+   */
+  public WeatherReportRepo getWeatherReportRepo ()
+  {
+    return weatherReportRepo;
+  }
+
+  /**
+   * @return the weatherForecastRepo
+   */
+  public WeatherForecastRepo getWeatherForecastRepo ()
+  {
+    return weatherForecastRepo;
+  }
+
+  /**
+   * @return the timeslotService
+   */
+  public TimeslotRepo getTimeslotService ()
+  {
+    return timeslotService;
+  }
+
+  /**
+   * @return the timeService
+   */
+  public TimeService getTimeService ()
+  {
+    return timeService;
+  }
+
+  /**
+   * @return the tariffMarketService
+   */
+  public TariffMarket getTariffMarketService ()
+  {
+    return tariffMarketService;
+  }
+
+  /**
+   * @return the tariffSubscriptionRepo
+   */
+  public TariffSubscriptionRepo getTariffSubscriptionRepo ()
+  {
+    return tariffSubscriptionRepo;
+  }
+
+  /**
+   * @return the customerRepo
+   */
+  public CustomerRepo getCustomerRepo ()
+  {
+    return customerRepo;
+  }
+
+  /**
+   * @return the randomSeedRepo
+   */
+  public RandomSeedRepo getRandomSeedRepo ()
+  {
+    return randomSeedRepo;
+  }
+
+  /**
+   * @return the tariffEvaluator
+   */
+  public TariffEvaluator getTariffEvaluator ()
+  {
+    return tariffEvaluator;
+  }
+
+  /**
+   * @return the tariffEvaluationHelper
+   */
+  public TariffEvaluationHelper getTariffEvaluationHelper ()
+  {
+    return tariffEvaluationHelper;
+  }
+
+  /**
+   * @return the seed
+   */
+  public RandomSeed getSeed ()
+  {
+    return seed;
+  }
+
+  /**
+   * @return the currentSubscription
+   */
+  public TariffSubscription getCurrentSubscription ()
+  {
+    return currentSubscription;
+  }
+
+  /**
+   * @return the producerAccessor
+   */
+  public ProducerAccessor getProducerAccessor ()
+  {
+    return producerAccessor;
+  }
+
+  /**
+   * @return the preferredOutput
+   */
+  public double getPreferredOutput ()
+  {
+    return preferredOutput;
+  }
+
+  /**
+   * @return the customerInfo
+   */
+  public CustomerInfo getCustomerInfo ()
+  {
+    return customerInfo;
   }
 }
