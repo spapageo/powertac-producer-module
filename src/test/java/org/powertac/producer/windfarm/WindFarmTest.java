@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powertac.common.Competition;
 import org.powertac.common.TimeService;
 import org.powertac.common.interfaces.Accounting;
 import org.powertac.common.interfaces.ServerConfiguration;
@@ -78,6 +79,8 @@ public class WindFarmTest
     brokerRepo.recycle();
 
     customerRepo.recycle();
+    
+    Competition.newInstance("Wind Farm Test");
   }
 
   @Test

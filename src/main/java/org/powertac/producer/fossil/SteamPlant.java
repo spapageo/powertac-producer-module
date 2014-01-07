@@ -49,7 +49,7 @@ public class SteamPlant extends Producer
     out.add(time, preferredOutput);
 
     double outSum = 0.0;
-    for (double t = 0.0; t < 60; t++) {
+    for (double t = 0.0; t < timeslotLengthInMin; t++) {
       outSum += out.value(t) + seed.nextGaussian() * diviation;
     }
 

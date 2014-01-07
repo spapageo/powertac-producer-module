@@ -47,6 +47,7 @@ public class SolarFarm extends Producer
   {
     panelList.add(panel);
     upperPowerCap += panel.getCapacity();
+    panel.setTimeslotLengthInMin(timeslotLengthInMin);
   }
 
   /*
@@ -109,6 +110,9 @@ public class SolarFarm extends Producer
     this.name = "Solar farm";
     initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
                IdGenerator.createId());
+    for(PvPanel panel : panelList){
+      panel.setTimeslotLengthInMin(timeslotLengthInMin);
+    }
     return this;
   }
 

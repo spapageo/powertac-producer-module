@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
 import org.powertac.common.IdGenerator;
 import org.powertac.common.RandomSeed;
@@ -93,7 +94,8 @@ public abstract class Producer
   protected double upperPowerCap;
   @XStreamOmitField
   protected String name;
-  
+  @XStreamOmitField
+  protected int timeslotLengthInMin;
 
 
   /**
@@ -137,6 +139,9 @@ public abstract class Producer
             .getBean("randomSeedRepo");
     tariffSubscriptionRepo = (TariffSubscriptionRepo) SpringApplicationContext
             .getBean("tariffSubscriptionRepo");
+    
+    this.timeslotLengthInMin = Competition.currentCompetition()
+            .getTimeslotLength();
     
     //Initialize the customer info with population 1
     customerInfo = new CustomerInfo(name, 1);

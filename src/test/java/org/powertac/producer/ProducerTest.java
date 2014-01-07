@@ -89,7 +89,7 @@ public class ProducerTest
 
   @Autowired
   private RandomSeedRepo randomSeedRepo;
-
+  
   private Configurator config;
   private Instant exp;
   private Broker broker1;
@@ -259,7 +259,6 @@ public class ProducerTest
     XStream x = new XStream();
     x.autodetectAnnotations(true);
     String out = x.toXML(plant);
-    System.out.println(out);
     plant = (RunOfRiver) x.fromXML(out);
     assertNotNull(plant.customerInfo);
     assertNotNull(plant.customerRepo);
@@ -277,6 +276,7 @@ public class ProducerTest
     assertNotNull(plant.weatherReportRepo);
     assertTrue(plant.preferredOutput == plant.upperPowerCap);
     assertTrue(plant.upperPowerCap != 0);
+    assertTrue(plant.timeslotLengthInMin == 60);
   }
 
 }

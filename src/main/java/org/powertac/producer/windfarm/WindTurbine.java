@@ -44,6 +44,8 @@ public class WindTurbine
 
   @XStreamOmitField
   private RandomSeed rs;
+  @XStreamOmitField
+  private int TimeslotLengthInMin = 60;
 
   public WindTurbine (double latitude, double surfaceRoughness,
                       double ratedOutput, double hubHeigth, Curve powerCurve)
@@ -61,10 +63,9 @@ public class WindTurbine
   public double getPowerOutput (double temperature, double avrHourlyWindSpeed)
   {
     if(rs == null)
-      throw new IllegalStateException("No seed was set");
-    else
       rs = new RandomSeed("Wind turbine" + IdGenerator.createId(), 0,
-                          "Simulation");
+              "Simulation");
+
     
     double sumPowerOutput = 0;
 
@@ -86,19 +87,19 @@ public class WindTurbine
     else
       std = 0.1 * correctedHourlySpeed;
     
-    for (int i = 0; i < 60; i++) {
+    for (int i = 0; i < TimeslotLengthInMin; i++) {
       sumPowerOutput +=
         calculateAirDensity(temperature, hubHeigth)
                 * powerCurve.value(sampleGaussian(std, correctedHourlySpeed))
                 / standardAirDensity;
     }
 
-    return -sumPowerOutput / 60;
+    return sumPowerOutput / 60;
   }
 
   public double sampleGaussian (double std, double mean)
   {
-    return rs.nextGaussian() * std + mean;
+    return abs(rs.nextGaussian() * std + mean);
   }
 
   protected static double calculateStd (double f, double ua, double altitude,
@@ -294,6 +295,22 @@ public class WindTurbine
   public void setPowerCurve (Curve powerCurve)
   {
     this.powerCurve = powerCurve;
+  }
+
+  /**
+   * @return the timeslotLengthInMin
+   */
+  public int getTimeslotLengthInMin ()
+  {
+    return TimeslotLengthInMin;
+  }
+
+  /**
+   * @param timeslotLengthInMin the timeslotLengthInMin to set
+   */
+  public void setTimeslotLengthInMin (int timeslotLengthInMin)
+  {
+    TimeslotLengthInMin = timeslotLengthInMin;
   }
 
 }

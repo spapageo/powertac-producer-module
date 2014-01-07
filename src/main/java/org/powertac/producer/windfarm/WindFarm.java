@@ -43,6 +43,7 @@ public class WindFarm extends Producer
   {
     windTurbine.setRs(seed);
     turbines.add(windTurbine);
+    windTurbine.setTimeslotLengthInMin(timeslotLengthInMin);
     this.upperPowerCap += windTurbine.getRatedOutput();
   }
 
@@ -114,6 +115,7 @@ public class WindFarm extends Producer
                IdGenerator.createId());
     for(WindTurbine wt: turbines){
       wt.setRs(seed);
+      wt.setTimeslotLengthInMin(timeslotLengthInMin);
     }
     return this;
   }

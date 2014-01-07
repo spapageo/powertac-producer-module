@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * @author Spyros Papageorgiou
@@ -37,7 +38,8 @@ public class PvPanel
   private double staticLosses = 0.78;
   private double clearIndex = 0.2;
   private double capacity;
-
+  @XStreamOmitField
+  private int timeslotLengthInMin = 60;
   public PvPanel (double panelArrea, double panelLatitude,
                   double panelLongitude, double panelAzimuth, double panelTilt,
                   double referenceEfficiency, double capacity)
@@ -68,7 +70,7 @@ public class PvPanel
     int timezoneOffset = cal.get(Calendar.ZONE_OFFSET) / (60 * 60 * 1000);
     double sum = 0;
 
-    for (int i = 0; i < 60; i++) {
+    for (int i = 0; i < timeslotLengthInMin; i++) {
       // calculate solar time
       double solarTime =
         SolarModel.getSolarTime(panelLongitude, timezoneOffset,
@@ -528,5 +530,21 @@ public class PvPanel
   public void setCapacity (double capacity)
   {
     this.capacity = capacity;
+  }
+
+  /**
+   * @return the timeslotLengthInMin
+   */
+  public int getTimeslotLengthInMin ()
+  {
+    return timeslotLengthInMin;
+  }
+
+  /**
+   * @param timeslotLengthInMin the timeslotLengthInMin to set
+   */
+  public void setTimeslotLengthInMin (int timeslotLengthInMin)
+  {
+    this.timeslotLengthInMin = timeslotLengthInMin;
   }
 }

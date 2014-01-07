@@ -95,11 +95,11 @@ public class WindTurbineTest
                                                   0.4);
 
       for (int i = 0; i < 10; i++) {
-        double power = -wt.getPowerOutput(298.15, speed);
+        double power = wt.getPowerOutput(298.15, speed);
         assertTrue(power + " " + speed,power <= 0);
         assertTrue(power != Double.NEGATIVE_INFINITY);
         pw.printf("%f,%f,%f%n", correctedHourlySpeed,
-                  power,c.value(correctedHourlySpeed));
+                  -power,c.value(correctedHourlySpeed));
       }
     }
 

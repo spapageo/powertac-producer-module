@@ -45,12 +45,14 @@ public abstract class HydroBase extends Producer
 
     double turbEff = turbineEfficiency.value(waterFlow/maxFlow);
 
-    double power = -getWaterPower(turbEff, waterFlow, height);
+    //make the power into kwh
+    double power = -getWaterPower(turbEff, waterFlow, height)
+            * timeslotLengthInMin * timeslotLengthInMin/(60 * 1000);
 
     updateVolume(inputFlow.value(day));
     updateHeigth();
     if (power > 0)
-      throw new IllegalStateException("I fucked up");
+      throw new IllegalStateException("Positive power");
     return power;
 
   }
