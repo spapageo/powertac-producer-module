@@ -4,29 +4,34 @@
 package org.powertac.producer.windfarm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.powertac.common.IdGenerator;
 import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.enumerations.PowerType;
 import org.powertac.producer.Producer;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+
 /**
  * @author Spyros Papageorgiou
  * 
  */
+@XStreamAlias("wind-farm")
 public class WindFarm extends Producer
 {
 
-  public WindFarm (String name)
+  public WindFarm ()
   {
-    super(name, PowerType.WIND_PRODUCTION, 24, 0);
+    super("Wind farm",PowerType.WIND_PRODUCTION, 24, 0);
   }
 
   // The list of turbines in this farm
+  @XStreamImplicit
   private List<WindTurbine> turbines = new ArrayList<>();
-  // The maximum/rated output of the farm
-  private double ratedOutput;
 
   /**
    * Adds the given wind turbine to the farm
@@ -36,6 +41,7 @@ public class WindFarm extends Producer
    */
   public void addWindTurbine (WindTurbine windTurbine)
   {
+    windTurbine.setRs(seed);
     turbines.add(windTurbine);
     this.upperPowerCap += windTurbine.getRatedOutput();
   }
@@ -57,6 +63,14 @@ public class WindFarm extends Producer
       return false;
     }
   }
+  
+  /**
+   * Returns the wind turbines in the farm.
+   * @return
+   */
+  public List<WindTurbine> getTurbineList(){
+    return Collections.unmodifiableList(turbines);
+  }
 
   /**
    * Executes the project simulation and return the power output for the given
@@ -75,23 +89,6 @@ public class WindFarm extends Producer
     return sumOutput;
   }
 
-  /**
-   * @return the ratedOutput
-   */
-  public double getRatedOutput ()
-  {
-    return ratedOutput;
-  }
-
-  /**
-   * @param ratedOutput
-   *          the ratedOutput to set
-   */
-  public void setRatedOutput (double ratedOutput)
-  {
-    this.ratedOutput = ratedOutput;
-  }
-
   @Override
   protected double getOutput (WeatherReport weatherReport)
   {
@@ -106,5 +103,18 @@ public class WindFarm extends Producer
   {
     return getPowerOutput(weatherForecastPrediction.getTemperature(),
                           weatherForecastPrediction.getWindSpeed());
+  }
+
+  /**
+   * This function is called after de-serialization
+   */
+  protected Object readResolve(){
+    this.name = "Wind farm";
+    initialize(name, PowerType.WIND_PRODUCTION, 24, upperPowerCap,
+               IdGenerator.createId());
+    for(WindTurbine wt: turbines){
+      wt.setRs(seed);
+    }
+    return this;
   }
 }

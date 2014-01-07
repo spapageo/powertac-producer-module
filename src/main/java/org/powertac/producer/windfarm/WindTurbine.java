@@ -3,15 +3,20 @@
  */
 package org.powertac.producer.windfarm;
 
+import org.powertac.common.IdGenerator;
 import org.powertac.common.RandomSeed;
 import org.powertac.producer.utils.Curve;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 import static java.lang.Math.*;
 
 /**
- * @author Spyro Papageorgiou
+ * @author Spyros Papageorgiou
  * 
  */
+@XStreamAlias("turbine")
 public class WindTurbine
 {
 
@@ -24,7 +29,7 @@ public class WindTurbine
   private double surfaceRoughness;
 
   // The air density at sea level at 15 C
-  private double standardAirDensity = 1.225;
+  private static double standardAirDensity = 1.225;
 
   private double kappa = 0.4;
 
@@ -37,9 +42,10 @@ public class WindTurbine
   // The power curve for 15 C at sea level
   private Curve powerCurve;
 
+  @XStreamOmitField
   private RandomSeed rs;
 
-  public WindTurbine (RandomSeed rs, double latitude, double surfaceRoughness,
+  public WindTurbine (double latitude, double surfaceRoughness,
                       double ratedOutput, double hubHeigth, Curve powerCurve)
   {
     if (ratedOutput >= 0 || latitude < -90 || latitude > 90
@@ -50,11 +56,16 @@ public class WindTurbine
     this.hubHeigth = hubHeigth;
     this.powerCurve = powerCurve;
     this.latitude = latitude;
-    this.rs = rs;
   }
 
   public double getPowerOutput (double temperature, double avrHourlyWindSpeed)
   {
+    if(rs == null)
+      throw new IllegalStateException("No seed was set");
+    else
+      rs = new RandomSeed("Wind turbine" + IdGenerator.createId(), 0,
+                          "Simulation");
+    
     double sumPowerOutput = 0;
 
     // Get the wind speed at the height of the turbine hub
@@ -62,12 +73,19 @@ public class WindTurbine
     double ua =
       calculateUasterisk(avrHourlyWindSpeed, refAltitude, f, surfaceRoughness,
                          kappa);
-
+    //ua can't be negative since it represents, wind speed 
+    if(ua < 0)
+      ua = 0;
     double correctedHourlySpeed =
       calculateWindAtAltitude(hubHeigth, surfaceRoughness, ua, f, kappa);
-
-    double std = calculateStd(f, ua, hubHeigth, surfaceRoughness);
-
+    
+    double std;
+    
+    if(correctedHourlySpeed > 1)
+      std = calculateStd(f, ua, hubHeigth, surfaceRoughness);
+    else
+      std = 0.1 * correctedHourlySpeed;
+    
     for (int i = 0; i < 60; i++) {
       sumPowerOutput +=
         calculateAirDensity(temperature, hubHeigth)
@@ -220,6 +238,22 @@ public class WindTurbine
   public double getLatitude ()
   {
     return latitude;
+  }
+
+  /**
+   * @return the rs
+   */
+  public RandomSeed getRs ()
+  {
+    return rs;
+  }
+
+  /**
+   * @param rs the rs to set
+   */
+  public void setRs (RandomSeed rs)
+  {
+    this.rs = rs;
   }
 
 }
