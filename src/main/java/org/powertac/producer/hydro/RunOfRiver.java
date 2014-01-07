@@ -65,7 +65,7 @@ public class RunOfRiver extends HydroBase
    */
   protected Object readResolve(){
     this.name = "Run of the river hydro plant";
-    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
+    initialize(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, upperPowerCap,
                IdGenerator.createId());
     return this;
   }
