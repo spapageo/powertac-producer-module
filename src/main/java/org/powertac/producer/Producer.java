@@ -182,16 +182,13 @@ public abstract class Producer
     // We need to get the Weather report and
     // then produced power for the active tariff
     WeatherReport report = weatherReportRepo.currentWeatherReport();
-    double power = getOutput(report);
 
-    List<TariffSubscription> subscriptions =
-      tariffSubscriptionRepo
-              .findActiveSubscriptionsForCustomer(customerInfo);
-
-    if (subscriptions.size() > 0)
-      subscriptions.get(0).usePower(power);
-    else
-      log.error("Got empty subscriptions list. We dont have an avtive tariff");
+    if (currentSubscription != null && report != null){
+      double power = getOutput(report);
+      currentSubscription.usePower(power);
+    }else{
+      log.error("No active subscription or null weather report");
+    }
   }
 
   abstract protected double getOutput (WeatherReport weatherReport);

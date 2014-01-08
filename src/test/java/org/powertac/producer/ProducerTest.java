@@ -330,6 +330,19 @@ public class ProducerTest
     assertTrue(plant.currentSubscription == sub);
   }
   
+  @Test
+  public void testStep(){
+    SteamPlant plant = new SteamPlant(10000, 2000, -500000);
+    SteamPlant spy = spy(plant);
+    doNothing().when(spy).consumePower();
+    spy.step();
+    verify(spy).consumePower();
+  }
+  
+  @Test
+  public void testCalculateOutput(){
+    // TODO
+  }
   
 
 }
