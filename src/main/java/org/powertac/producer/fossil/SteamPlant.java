@@ -28,7 +28,7 @@ public class SteamPlant extends Producer
   private double lastOutput;
 
   public SteamPlant (double adjustmentSpeed, double diviation,
-              double capacity)
+                     double capacity)
   {
     // Maybe change the profile hours
     super("Steam plant", PowerType.FOSSIL_PRODUCTION,
@@ -43,11 +43,18 @@ public class SteamPlant extends Producer
   {
     Curve out = new Curve();
     out.add(0, lastOutput);
-    double time =
-      (preferredOutput - lastOutput)
+    if(abs(preferredOutput - lastOutput) > 0.01*abs(upperPowerCap)){
+      double time =
+              (preferredOutput - lastOutput)
               / (signum(preferredOutput - lastOutput) * adjustmentSpeed);
-    out.add(time, preferredOutput);
-
+      out.add(time/2, (signum(preferredOutput - lastOutput) * adjustmentSpeed)
+              * time / 2 + lastOutput);
+      out.add(time, preferredOutput);
+    }else{
+      out.add(timeslotLengthInMin/2, preferredOutput);
+      out.add(timeslotLengthInMin, preferredOutput);
+    }
+    
     double outSum = 0.0;
     for (double t = 0.0; t < timeslotLengthInMin; t++) {
       outSum += out.value(t) + seed.nextGaussian() * diviation;
@@ -58,7 +65,7 @@ public class SteamPlant extends Producer
       throw new IllegalStateException("I fucked up");
     return outSum / 60.0;
   }
-  
+
   /**
    * This function is called after de-serialization
    */
@@ -69,7 +76,7 @@ public class SteamPlant extends Producer
                IdGenerator.createId());
     return this;
   }
-  
+
   /**
    * @return the adjustmentSpeed
    */
@@ -94,8 +101,8 @@ public class SteamPlant extends Producer
 
   @Override
   protected double
-    getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction)
+  getOutput (int timeslotIndex,
+             WeatherForecastPrediction weatherForecastPrediction)
   {
     return getOutput();
   }

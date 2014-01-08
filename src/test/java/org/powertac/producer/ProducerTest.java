@@ -1,13 +1,8 @@
 package org.powertac.producer;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +19,11 @@ import org.mockito.stubbing.Answer;
 import org.powertac.common.Broker;
 import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
-import org.powertac.common.RandomSeed;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
+import org.powertac.common.TariffEvaluator;
 import org.powertac.common.TariffSpecification;
+import org.powertac.common.TariffSubscription;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.TimeService;
 import org.powertac.common.config.Configurator;
@@ -42,6 +38,8 @@ import org.powertac.common.repo.TariffRepo;
 import org.powertac.common.repo.TariffSubscriptionRepo;
 import org.powertac.common.repo.TimeslotRepo;
 import org.powertac.common.repo.WeatherReportRepo;
+import org.powertac.producer.Producer.PreferredOutput;
+import org.powertac.producer.Producer.ProducerAccessor;
 import org.powertac.producer.fossil.SteamPlant;
 import org.powertac.producer.hydro.RunOfRiver;
 import org.powertac.producer.utils.Curve;
@@ -122,23 +120,27 @@ public class ProducerTest
     // DateTimeZone.UTC).toInstant();
     now = comp.getSimulationBaseTime();
     timeService.setCurrentTime(now);
-    timeService.setBase(now.getMillis());
+    timeService.setClockParameters(now.toInstant().getMillis(), 720l, 60*60*1000);
     exp = now.plus(TimeService.WEEK * 10);
 
     defaultTariffSpec =
-      new TariffSpecification(broker1, PowerType.CONSUMPTION)
-              .withExpiration(exp).addRate(new Rate().withValue(-0.5));
+      new TariffSpecification(broker1, PowerType.PRODUCTION)
+              .withExpiration(exp).addRate(new Rate().withValue(0.5));
+    
     defaultTariff = new Tariff(defaultTariffSpec);
     defaultTariff.init();
     defaultTariff.setState(Tariff.State.OFFERED);
 
     tariffRepo.setDefaultTariff(defaultTariffSpec);
 
-    when(mockTariffMarket.getDefaultTariff(PowerType.CONSUMPTION))
-            .thenReturn(defaultTariff);
-
-    when(mockTariffMarket.getDefaultTariff(PowerType.INTERRUPTIBLE_CONSUMPTION))
-            .thenReturn(defaultTariff);
+    when(mockTariffMarket.getDefaultTariff(PowerType.FOSSIL_PRODUCTION))
+         .thenReturn(defaultTariff);
+    when(mockTariffMarket.getDefaultTariff(PowerType.RUN_OF_RIVER_PRODUCTION))
+         .thenReturn(defaultTariff);
+    when(mockTariffMarket.getDefaultTariff(PowerType.SOLAR_PRODUCTION))
+         .thenReturn(defaultTariff);
+    when(mockTariffMarket.getDefaultTariff(PowerType.WIND_PRODUCTION))
+         .thenReturn(defaultTariff);
 
     accountingArgs = new ArrayList<Object[]>();
 
@@ -168,12 +170,6 @@ public class ProducerTest
       }
     }).when(mockServerProperties).configureMe(anyObject());
 
-    RandomSeed seed = randomSeedRepo.getRandomSeed("asdasdas", 1, " asdasd");
-    if(seed==null){
-      System.out.println("BAMMMMM");
-    }else{
-      seed.nextDouble();
-    }
     
     TreeMap<String, String> map = new TreeMap<String, String>();
     map.put("common.competition.expectedTimeslotCount", "1440");
@@ -278,5 +274,62 @@ public class ProducerTest
     assertTrue(plant.upperPowerCap != 0);
     assertTrue(plant.timeslotLengthInMin == 60);
   }
+  
+  @Test
+  public void testSubscribeDefault(){
+    final SteamPlant plant = new SteamPlant(10000, 2000, -500000);
+    assertNull(plant.getCurrentSubscription());
+    
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer (InvocationOnMock invocation) throws Throwable
+      {
+        assertTrue((Tariff)invocation.getArguments()[0] == defaultTariff);
+        assertTrue((CustomerInfo)invocation.getArguments()[1] == 
+                plant.getCustomerInfo());
+        assertTrue((int)invocation.getArguments()[2] == 1);
+        TariffSubscription sub = new TariffSubscription(
+                                                        plant.getCustomerInfo(),
+                                                        defaultTariff);
+        sub.subscribe(1);
+        tariffSubscriptionRepo.add(sub);
+        return null;
+      }
+      
+    }).when(mockTariffMarket).subscribeToTariff(defaultTariff,
+                                               plant.getCustomerInfo(),
+                                               1);
+    plant.subscribeDefault();
+    assertNotNull(plant.getCurrentSubscription());
+    assertEquals(plant.getCurrentSubscription().getTariff(), defaultTariff);
+  }
+  
+  @Test
+  public void testEvaluateTariffs(){
+    SteamPlant plant = new SteamPlant(10000, 2000, -500000);
+    
+    TariffEvaluator te = mock(TariffEvaluator.class);
+    plant.setTariffEvaluator(te);
+    
+    plant.evaluateNewTariffs();
+    verify(te).evaluateTariffs();
+    
+    
+    ProducerAccessor accessor = mock(ProducerAccessor.class);
+    when(accessor.generateOutput(any(Tariff.class), anyInt()))
+      .thenReturn(new PreferredOutput(plant.upperPowerCap, new double[24]));
+    plant.setProducerAccessor(accessor);
+    
+    TariffSubscription sub = new TariffSubscription(plant.customerInfo, defaultTariff);
+    sub.subscribe(1);
+    tariffSubscriptionRepo.add(sub);
+    
+    plant.evaluateNewTariffs();
+    verify(te,times(2)).evaluateTariffs();
+    verify(accessor).generateOutput(any(Tariff.class), anyInt());
+    assertTrue(plant.currentSubscription == sub);
+  }
+  
+  
 
 }

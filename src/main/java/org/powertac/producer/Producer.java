@@ -257,7 +257,7 @@ public abstract class Producer
    * @author Spyros Papageorgiou
    * 
    */
-  private class ProducerAccessor implements CustomerModelAccessor
+  protected static class ProducerAccessor implements CustomerModelAccessor
   {
     
     private Producer parent;
@@ -292,12 +292,12 @@ public abstract class Producer
       List<WeatherForecast> forecasts =
         parent.weatherForecastRepo.allWeatherForecasts();
       // add the current forecast in the front
-      forecasts.add(0, weatherForecastRepo.currentWeatherForecast());
+      forecasts.add(0, parent.weatherForecastRepo.currentWeatherForecast());
       boolean quit = false;
 
       if (forecasts.size() == 0) {
         log.error("Got zero weather forecasts on the creation of the customer profile");
-        return new PreferredOutput(preferredOutput, new double[0]);
+        return new PreferredOutput(parent.preferredOutput, new double[0]);
       }
 
       for (WeatherForecast forecast: forecasts) {
@@ -334,29 +334,29 @@ public abstract class Producer
       // the cached preferred output for which we get maximum money
       double maxPreferredOutput = 0;
       // save the preferred output to restore later
-      double savePreferredOutput = preferredOutput;
+      double savePreferredOutput = parent.preferredOutput;
 
       // CARE Careful on the signs
-      for (preferredOutput = 0; preferredOutput >= upperPowerCap; preferredOutput -=
-        step * upperPowerCap) {
+      for (parent.preferredOutput = 0; parent.preferredOutput >= parent.upperPowerCap;
+              parent.preferredOutput -= step * parent.upperPowerCap) {
         double[] out = new double[predictions.size()];
         for (int i = 0; i < out.length; i++) {
           int timeslot = slotIter.next();
-          out[i] = getOutput(timeslot, predictions.get(timeslot));
+          out[i] = parent.getOutput(timeslot, predictions.get(timeslot));
         }
         // calculate the money
-        double money = tariffEvaluationHelper.estimateCost(tariff, out, true);
+        double money = parent.tariffEvaluationHelper.estimateCost(tariff, out, true);
         if (money > maxPayment) {
           maxPayment = money;
           maxOuput = out;
-          maxPreferredOutput = preferredOutput;
+          maxPreferredOutput = parent.preferredOutput;
         }
         // reset the iterator
         slotIter = predictions.keySet().iterator();
       }
 
       // restore the preferred output
-      preferredOutput = savePreferredOutput;
+      parent.preferredOutput = savePreferredOutput;
 
       return new PreferredOutput(maxPreferredOutput, maxOuput);
     }
@@ -396,7 +396,7 @@ public abstract class Producer
 
   }
 
-  private class PreferredOutput
+  protected static class PreferredOutput
   {
     public PreferredOutput (double preferredOutput, double[] output)
     {
@@ -657,5 +657,143 @@ public abstract class Producer
   public CustomerInfo getCustomerInfo ()
   {
     return customerInfo;
+  }
+
+  /**
+   * @return the timeslotLengthInMin
+   */
+  public int getTimeslotLengthInMin ()
+  {
+    return timeslotLengthInMin;
+  }
+
+  /**
+   * @param timeslotLengthInMin the timeslotLengthInMin to set
+   */
+  public void setTimeslotLengthInMin (int timeslotLengthInMin)
+  {
+    this.timeslotLengthInMin = timeslotLengthInMin;
+  }
+
+  /**
+   * @param weatherReportRepo the weatherReportRepo to set
+   */
+  public void setWeatherReportRepo (WeatherReportRepo weatherReportRepo)
+  {
+    this.weatherReportRepo = weatherReportRepo;
+  }
+
+  /**
+   * @param weatherForecastRepo the weatherForecastRepo to set
+   */
+  public void setWeatherForecastRepo (WeatherForecastRepo weatherForecastRepo)
+  {
+    this.weatherForecastRepo = weatherForecastRepo;
+  }
+
+  /**
+   * @param timeslotService the timeslotService to set
+   */
+  public void setTimeslotService (TimeslotRepo timeslotService)
+  {
+    this.timeslotService = timeslotService;
+  }
+
+  /**
+   * @param timeService the timeService to set
+   */
+  public void setTimeService (TimeService timeService)
+  {
+    this.timeService = timeService;
+  }
+
+  /**
+   * @param tariffMarketService the tariffMarketService to set
+   */
+  public void setTariffMarketService (TariffMarket tariffMarketService)
+  {
+    this.tariffMarketService = tariffMarketService;
+  }
+
+  /**
+   * @param tariffSubscriptionRepo the tariffSubscriptionRepo to set
+   */
+  public void
+    setTariffSubscriptionRepo (TariffSubscriptionRepo tariffSubscriptionRepo)
+  {
+    this.tariffSubscriptionRepo = tariffSubscriptionRepo;
+  }
+
+  /**
+   * @param customerRepo the customerRepo to set
+   */
+  public void setCustomerRepo (CustomerRepo customerRepo)
+  {
+    this.customerRepo = customerRepo;
+  }
+
+  /**
+   * @param randomSeedRepo the randomSeedRepo to set
+   */
+  public void setRandomSeedRepo (RandomSeedRepo randomSeedRepo)
+  {
+    this.randomSeedRepo = randomSeedRepo;
+  }
+
+  /**
+   * @param tariffEvaluator the tariffEvaluator to set
+   */
+  public void setTariffEvaluator (TariffEvaluator tariffEvaluator)
+  {
+    this.tariffEvaluator = tariffEvaluator;
+  }
+
+  /**
+   * @param tariffEvaluationHelper the tariffEvaluationHelper to set
+   */
+  public void
+    setTariffEvaluationHelper (TariffEvaluationHelper tariffEvaluationHelper)
+  {
+    this.tariffEvaluationHelper = tariffEvaluationHelper;
+  }
+
+  /**
+   * @param seed the seed to set
+   */
+  public void setSeed (RandomSeed seed)
+  {
+    this.seed = seed;
+  }
+
+  /**
+   * @param currentSubscription the currentSubscription to set
+   */
+  public void setCurrentSubscription (TariffSubscription currentSubscription)
+  {
+    this.currentSubscription = currentSubscription;
+  }
+
+  /**
+   * @param producerAccessor the producerAccessor to set
+   */
+  public void setProducerAccessor (ProducerAccessor producerAccessor)
+  {
+    this.producerAccessor = producerAccessor;
+  }
+
+  /**
+   * @param preferredOutput the preferredOutput to set
+   */
+  public void setPreferredOutput (double preferredOutput)
+  {
+    this.preferredOutput = preferredOutput;
+  }
+
+  /**
+   * @param customerInfo the customerInfo to set
+   */
+  public void setCustomerInfo (CustomerInfo customerInfo)
+  {
+    this.customerInfo = customerInfo;
   }
 }
