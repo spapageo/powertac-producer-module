@@ -3,7 +3,7 @@ package org.powertac.producer.pvfarm;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.junit.Test;
@@ -14,10 +14,12 @@ public class ElectricalModelTest
 
   @Test
   public void testEfficienncyTemperatureIrradiance ()
-    throws FileNotFoundException
+    throws IOException
   {
+    File file = new File("data/dataEfficienncyTemperatureIrradiance.txt");
+    file.createNewFile();
     PrintWriter pw =
-      new PrintWriter(new File("dataEfficienncyTemperatureIrradiance.txt"));
+      new PrintWriter("data/dataEfficienncyTemperatureIrradiance.txt");
     for (double irradiance = 200; irradiance < 1200; irradiance += 50) {
       for (double temperature = 273; temperature < 353; temperature += 5) {
         double panelTemp =

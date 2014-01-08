@@ -3,7 +3,7 @@ package org.powertac.producer.windfarm;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.junit.Test;
@@ -16,11 +16,13 @@ public class WindTurbineTest
 {
 
   @Test
-  public void dataCalculateWindAtAltitude () throws FileNotFoundException
+  public void dataCalculateWindAtAltitude () throws IOException
   {
 
+    File file = new File("data/dataCalculateWindAtAltitude.txt");
+    file.createNewFile();
     PrintWriter pw =
-            new PrintWriter(new File("dataCalculateWindAtAltitude.txt"));
+            new PrintWriter(new File("data/dataCalculateWindAtAltitude.txt"));
 
     double[] zlist = { 0.01, 1, 2 };
     double refAltitude = 20;
@@ -43,10 +45,12 @@ public class WindTurbineTest
   }
 
   @Test
-  public void dataCalculateStd () throws FileNotFoundException
+  public void dataCalculateStd () throws IOException
   {
 
-    PrintWriter pw = new PrintWriter(new File("dataCalculateStd.txt"));
+    File file = new File("data/dataCalculateStd.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataCalculateStd.txt"));
 
     double[] zlist = { 0.01, 1, 2 };
     double refAltitude = 20;
@@ -69,7 +73,7 @@ public class WindTurbineTest
   }
 
   @Test
-  public void dataGetPowerOutput () throws FileNotFoundException
+  public void dataGetPowerOutput () throws IOException
   {
     double[] x =
           {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -82,7 +86,9 @@ public class WindTurbineTest
     c.setCustomLastValue(0);
     WindTurbine wt =
             new WindTurbine( 22, 0.01,-2000, 80, c);
-    PrintWriter pw = new PrintWriter(new File("dataGetPowerOutput.txt"));
+    File file = new File("data/dataGetPowerOutput.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataGetPowerOutput.txt"));
 
     for (double speed = 0; speed < 35; speed += 0.1) {
       double f = WindTurbine.calulcatef(22);

@@ -3,7 +3,7 @@ package org.powertac.producer.pvfarm;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -26,7 +26,7 @@ public class SolarModelTest
   }
 
   @Test
-  public void dataGetSolarPosition () throws FileNotFoundException
+  public void dataGetSolarPosition () throws IOException
   {
     double latitude = 45;
 
@@ -39,7 +39,9 @@ public class SolarModelTest
     cal.set(Calendar.SECOND, 0);
     cal.set(Calendar.MILLISECOND, 0);
 
-    PrintWriter pw = new PrintWriter(new File("dataGetSolarPosition.txt"));
+    File file = new File("data/dataGetSolarPosition.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataGetSolarPosition.txt"));
 
     for (int i = 0; i < 24; i++) {
       double altitude =
@@ -71,9 +73,11 @@ public class SolarModelTest
   }
 
   @Test
-  public void dataGetSunDivergance () throws FileNotFoundException
+  public void dataGetSunDivergance () throws IOException
   {
-    PrintWriter pw = new PrintWriter(new File("dataGetSunDivergance.txt"));
+    File file = new File("data/dataGetSunDivergance.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataGetSunDivergance.txt"));
     for (int i = 1; i < 366; i++) {
       double data = SolarModel.getSunDivergance(i);
       pw.println(i + "," + data);

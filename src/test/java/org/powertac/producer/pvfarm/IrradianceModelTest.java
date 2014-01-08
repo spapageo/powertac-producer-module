@@ -3,7 +3,7 @@ package org.powertac.producer.pvfarm;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
@@ -23,9 +23,11 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void testClearSkyModelCoefficients () throws FileNotFoundException
+  public void testClearSkyModelCoefficients () throws IOException
   {
-    PrintWriter pw = new PrintWriter(new File("dataSkyModelCoefficients.txt"));
+    File file = new File("data/dataSkyModelCoefficients.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataSkyModelCoefficients.txt"));
     for (double airmass = 1.0; airmass < 38.0; airmass += 0.2) {
       double Tr = IrradianceModel.getTr(airmass);
       double T0 = IrradianceModel.getT0(airmass, 3);
@@ -49,9 +51,11 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void testGetAirMass () throws FileNotFoundException
+  public void testGetAirMass () throws IOException
   {
-    PrintWriter pw = new PrintWriter(new File("dataGetAirMass.txt"));
+    File file = new File("data/dataGetAirMass.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataGetAirMass.txt"));
     for (double g = 0; g < 91; g++) {
       double data = IrradianceModel.getAirMass(g);
       pw.printf("%f,%f%n", g, data);
@@ -66,9 +70,11 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void testIrradianceModel () throws FileNotFoundException
+  public void testIrradianceModel () throws IOException
   {
-    PrintWriter pw = new PrintWriter(new File("dataIrradianceModel.txt"));
+    File file = new File("data/dataIrradianceModel.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataIrradianceModel.txt"));
     for (double g = 0; g < 24; g += 0.1) {
       double sunAltitude = SolarModel.getSunAltitudeAngle(g, 45, 180);
       if (sunAltitude >= 0) {
@@ -117,13 +123,17 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void testDailyIrradianceOnTitledPlane () throws FileNotFoundException
+  public void testDailyIrradianceOnTitledPlane () throws IOException
   {
 
+    File file = new File("data/dataIrradianceOnTiltedPlane.txt");
+    file.createNewFile();
+    File file2 = new File("data/dataIrradianceOnTiltedPlane2.txt");
+    file2.createNewFile();
     PrintWriter pw =
-      new PrintWriter(new File("dataIrradianceOnTiltedPlane.txt"));
+      new PrintWriter(new File("data/dataIrradianceOnTiltedPlane.txt"));
     PrintWriter pw2 =
-      new PrintWriter(new File("dataIrradianceOnTiltedPlane2.txt"));
+      new PrintWriter(new File("data/dataIrradianceOnTiltedPlane2.txt"));
 
     int day = 180;
     double panelLatitude = 60;
@@ -192,10 +202,12 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void dataYearIrradiance () throws FileNotFoundException
+  public void dataYearIrradiance () throws IOException
   {
 
-    PrintWriter pw = new PrintWriter(new File("dataYearIrradiance.txt"));
+    File file = new File("data/dataYearIrradiance.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataYearIrradiance.txt"));
 
     double panelLatitude = 45;
     for (int day = 1; day <= 365; day += 1) {
@@ -250,12 +262,12 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void dataYearIrradianceOnTitledPlane () throws FileNotFoundException
+  public void dataYearIrradianceOnTitledPlane () throws IOException
   {
-
+    File file = new File("data/dataYearIrradianceOnTitledPlane.txt");
+    file.createNewFile();
     PrintWriter pw =
-      new PrintWriter(new File("dataYearIrradianceOnTitledPlane.txt"));
-    PrintWriter debug = new PrintWriter(new File("debug.txt"));
+      new PrintWriter(new File("data/dataYearIrradianceOnTitledPlane.txt"));
 
     double panelLatitude = 45;
     double panelTit = 80;
@@ -310,22 +322,16 @@ public class IrradianceModelTest
           outsum = outsum + res / 10000;
           outsum2 = outsum2 + (dir + dif) / 10000;
 
-          if (day == 113 || day == 114) {
-            debug.printf("%d,%f,%f,%f,%f,%f,%f,%f%n", day, time, dir, dif, res,
-                         inci, sunazimuth, sunaltitude, airmass);
-          }
-
         }
       }
       pw.printf("%d,%f,%f%n", day, outsum, outsum2);
 
     }
     pw.close();
-    debug.close();
   }
 
   @Test
-  public void dataTrSpline () throws FileNotFoundException
+  public void dataTrSpline () throws IOException
   {
     double[] airmass =
       { 0.5, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0,
@@ -338,7 +344,9 @@ public class IrradianceModelTest
 
     PolynomialSplineFunction spline =
       new SplineInterpolator().interpolate(airmass, Tr);
-    PrintWriter pw = new PrintWriter(new File("dataTrSpline.txt"));
+    File file = new File("data/dataTrSpline.txt");
+    file.createNewFile();
+    PrintWriter pw = new PrintWriter(new File("data/dataTrSpline.txt"));
     for (double i = 0.5; i < 40.0; i += 0.1) {
       pw.printf("%f,%f%n", i, spline.value(i));
     }
