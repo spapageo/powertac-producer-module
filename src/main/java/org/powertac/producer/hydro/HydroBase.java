@@ -52,7 +52,7 @@ public abstract class HydroBase extends Producer
     double power = -getWaterPower(staticLosses,turbEff, waterFlow, height)
             * timeslotLengthInMin /(60 * 1000);
 
-    updateVolume(inputFlow.value(day));
+    updateVolume(inputFlow.value(day),waterFlow);
     updateHeigth();
     if (power > 0)
       throw new IllegalStateException("Positive power");
@@ -71,7 +71,7 @@ public abstract class HydroBase extends Producer
       return 0;
   }
 
-  protected abstract void updateVolume (double inputFlow);
+  protected abstract void updateVolume (double inputFlow, double turbineFlow);
 
   protected abstract void updateHeigth ();
 

@@ -42,7 +42,8 @@ public class Dam extends HydroBase
     for (double flow = minFlow; flow <= maxFlow; flow +=
       (maxFlow - minFlow) / 10) {
       double pow = getWaterPower(this.staticLosses,
-                                 this.turbineEfficiency.value(flow), flow, 1);
+                                 this.turbineEfficiency.value(flow/maxFlow),
+                                 flow, 1)*timeslotLengthInMin/(1000*60);
       c.add(flow, pow);
     }
 
@@ -50,9 +51,9 @@ public class Dam extends HydroBase
   }
 
   @Override
-  protected void updateVolume (double inputFlow)
+  protected void updateVolume (double inputFlow,double computedFlow)
   {
-    this.volume = +inputFlow * 3600;
+    this.volume += ( inputFlow - computedFlow) * 3600;
   }
 
   @Override
@@ -62,7 +63,7 @@ public class Dam extends HydroBase
       return maxFlow;
     }
     else {
-      return invCurveOut.value(preferredOutput / height);
+      return invCurveOut.value(-preferredOutput / height);
     }
   }
 
