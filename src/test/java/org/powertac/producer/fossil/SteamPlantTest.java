@@ -24,7 +24,7 @@ public class SteamPlantTest
     
     plant = new SteamPlant(10000, 5000, -500000);
     plant.setPreferredOutput(-200000);
-    assertEquals(-500000,plant.getOutput(), 10000);
+    assertEquals(-200000,plant.getOutput(), 100000);
   }
 
 }

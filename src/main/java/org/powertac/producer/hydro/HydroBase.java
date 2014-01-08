@@ -30,6 +30,10 @@ public abstract class HydroBase extends Producer
   {
     // no dam production put both on run of the river
     super(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, capacity);
+    if(inputFlow == null || minFlow < 0 || maxFlow < minFlow ||
+            turbineEfficiency == null || initialVolume < 0 || initialHeight < 0 ||
+            staticLosses < 0 || staticLosses > 1)
+      throw new IllegalArgumentException();
     this.inputFlow = inputFlow;
     this.minFlow = minFlow;
     this.maxFlow = maxFlow;
@@ -60,22 +64,22 @@ public abstract class HydroBase extends Producer
 
   }
 
-  protected double getWaterPower (double staticLosses, double turbineEfficiency,
+  protected double getWaterPower (double staticLosseCoef, double turbineEff,
                                   double flow, double heigth)
   {
     if (flow >= minFlow && flow <= maxFlow)
-      return staticLosses * turbineEfficiency * waterDensity * g * heigth * flow;
+      return staticLosseCoef * turbineEff * waterDensity * g * heigth * flow;
     else if (flow > maxFlow)
-      return staticLosses * turbineEfficiency * waterDensity * g * heigth * maxFlow;
+      return staticLosseCoef * turbineEff * waterDensity * g * heigth * maxFlow;
     else
       return 0;
   }
 
-  protected abstract void updateVolume (double inputFlow, double turbineFlow);
+  protected abstract void updateVolume (double avInputFlow, double turbineFlow);
 
   protected abstract void updateHeigth ();
 
-  protected abstract double getFlow (double inputFlow);
+  protected abstract double getFlow (double avInputFlow);
 
   /**
    * @return the inputFlow
@@ -130,6 +134,8 @@ public abstract class HydroBase extends Producer
    */
   public void setInputFlow (Curve inputFlow)
   {
+    if(inputFlow == null)
+      throw new IllegalArgumentException();
     this.inputFlow = inputFlow;
   }
 
@@ -138,6 +144,8 @@ public abstract class HydroBase extends Producer
    */
   public void setMinFlow (double minFlow)
   {
+    if(minFlow < 0 || minFlow >= maxFlow)
+      throw new IllegalArgumentException();
     this.minFlow = minFlow;
   }
 
@@ -146,6 +154,8 @@ public abstract class HydroBase extends Producer
    */
   public void setMaxFlow (double maxFlow)
   {
+    if(maxFlow < 0 || maxFlow <= minFlow)
+      throw new IllegalArgumentException();
     this.maxFlow = maxFlow;
   }
 
@@ -154,6 +164,8 @@ public abstract class HydroBase extends Producer
    */
   public void setTurbineEfficiency (Curve turbineEfficiency)
   {
+    if(turbineEfficiency == null)
+      throw new IllegalArgumentException();
     this.turbineEfficiency = turbineEfficiency;
   }
 
@@ -162,6 +174,8 @@ public abstract class HydroBase extends Producer
    */
   public void setVolume (double volume)
   {
+    if(volume < 0)
+      throw new IllegalArgumentException();
     this.volume = volume;
   }
 
@@ -170,6 +184,8 @@ public abstract class HydroBase extends Producer
    */
   public void setHeight (double height)
   {
+    if(height < 0)
+      throw new IllegalArgumentException();
     this.height = height;
   }
 }

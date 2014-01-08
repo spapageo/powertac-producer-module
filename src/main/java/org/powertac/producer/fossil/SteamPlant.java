@@ -33,6 +33,8 @@ public class SteamPlant extends Producer
     // Maybe change the profile hours
     super("Steam plant", PowerType.FOSSIL_PRODUCTION,
           24, capacity);
+    if(adjustmentSpeed <= 0 || diviation <= 0 )
+      throw new IllegalArgumentException();
     this.lastOutput = capacity;
     this.adjustmentSpeed = adjustmentSpeed;
     this.diviation = diviation;
@@ -61,8 +63,8 @@ public class SteamPlant extends Producer
     }
 
     lastOutput = out.value(60.0);
-    if (outSum > 0)
-      throw new IllegalStateException("I fucked up");
+    if (Double.isInfinite(outSum) || Double.isNaN(outSum))
+      throw new IllegalStateException("Invalid power");
     return outSum / 60.0;
   }
 
@@ -112,6 +114,8 @@ public class SteamPlant extends Producer
    */
   public void setAdjustmentSpeed (double adjustmentSpeed)
   {
+    if(adjustmentSpeed <= 0)
+      throw new IllegalArgumentException();
     this.adjustmentSpeed = adjustmentSpeed;
   }
 
@@ -120,6 +124,8 @@ public class SteamPlant extends Producer
    */
   public void setDiviation (double diviation)
   {
+    if(diviation <= 0 )
+      throw new IllegalArgumentException();
     this.diviation = diviation;
   }
 

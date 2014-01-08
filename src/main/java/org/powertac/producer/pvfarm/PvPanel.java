@@ -46,7 +46,8 @@ public class PvPanel
   {
     if (panelArrea <= 0 || panelLatitude > 90 || panelLatitude < -90
         || panelAzimuth > 360 || panelAzimuth < 0 || panelTilt > 90
-        || panelTilt < 0 || referenceEfficiency < 0 || capacity > 0)
+        || panelTilt < 0 || referenceEfficiency < 0 || capacity > 0
+        || panelLongitude <= -180 || panelLongitude >= 180)
       throw new IllegalArgumentException();
     this.panelArrea = panelArrea;
     this.panelLatitude = panelLatitude;
@@ -155,6 +156,8 @@ public class PvPanel
       cal.add(Calendar.MINUTE, 1);
     }
 
+    if(Double.isInfinite(sum) || Double.isNaN(sum))
+      throw new IllegalStateException("Power produced isn't a number");
     return -sum / 60;
   }
 
@@ -172,6 +175,8 @@ public class PvPanel
    */
   public void setPanelArrea (double panelArrea)
   {
+    if(panelArrea < 0)
+      throw new IllegalArgumentException();
     this.panelArrea = panelArrea;
   }
 
@@ -189,6 +194,8 @@ public class PvPanel
    */
   public void setPanelLatitude (double panelLatitude)
   {
+    if(panelLatitude > 90 || panelLatitude < -90)
+      throw new IllegalArgumentException();
     this.panelLatitude = panelLatitude;
   }
 
@@ -206,6 +213,8 @@ public class PvPanel
    */
   public void setPanelLongitude (double panelLongitude)
   {
+    if(panelLongitude <= -180 || panelLongitude >= 180)
+      throw new IllegalArgumentException();
     this.panelLongitude = panelLongitude;
   }
 
@@ -223,6 +232,8 @@ public class PvPanel
    */
   public void setPanelAzimuth (double panelAzimuth)
   {
+    if(panelAzimuth < 0 || panelAzimuth > 360)
+      throw new IllegalArgumentException();
     this.panelAzimuth = panelAzimuth;
   }
 
@@ -240,6 +251,8 @@ public class PvPanel
    */
   public void setPanelTilt (double panelTilt)
   {
+    if(panelTilt < -90 || panelTilt > 90)
+      throw new IllegalArgumentException();
     this.panelTilt = panelTilt;
   }
 
@@ -257,6 +270,8 @@ public class PvPanel
    */
   public void setPanelEfficiency (double panelEfficiency)
   {
+    if(panelEfficiency < 0 || panelEfficiency > 1)
+      throw new IllegalArgumentException();
     this.panelEfficiency = panelEfficiency;
   }
 
@@ -274,6 +289,8 @@ public class PvPanel
    */
   public void setGroundAlbedo (double groundAlbedo)
   {
+    if(groundAlbedo < 0 )
+      throw new IllegalArgumentException();
     this.groundAlbedo = groundAlbedo;
   }
 
@@ -291,6 +308,8 @@ public class PvPanel
    */
   public void setHumidity (double humidity)
   {
+    if(humidity < 0 || humidity > 1)
+      throw new IllegalArgumentException();
     this.humidity = humidity;
   }
 
@@ -308,6 +327,8 @@ public class PvPanel
    */
   public void setOzoneLayerDepth (double ozoneLayerDepth)
   {
+    if(ozoneLayerDepth < 0 )
+      throw new IllegalArgumentException();
     this.ozoneLayerDepth = ozoneLayerDepth;
   }
 
@@ -325,6 +346,8 @@ public class PvPanel
    */
   public void setPressure (double pressure)
   {
+    if(pressure < 0 )
+      throw new IllegalArgumentException();
     this.pressure = pressure;
   }
 
@@ -342,6 +365,8 @@ public class PvPanel
    */
   public void setTa (double ta)
   {
+    if(ta < 0 )
+      throw new IllegalArgumentException();
     Ta = ta;
   }
 
@@ -478,6 +503,8 @@ public class PvPanel
    */
   public void setTref (double tref)
   {
+    if(tref <= 0 )
+      throw new IllegalArgumentException();
     Tref = tref;
   }
 
@@ -495,6 +522,8 @@ public class PvPanel
    */
   public void setStaticLosses (double staticLosses)
   {
+    if(staticLosses <= 0 || staticLosses > 1)
+      throw new IllegalArgumentException();
     this.staticLosses = staticLosses;
   }
 
@@ -529,6 +558,8 @@ public class PvPanel
    */
   public void setCapacity (double capacity)
   {
+    if(capacity <= 0 )
+      throw new IllegalArgumentException();
     this.capacity = capacity;
   }
 
@@ -545,6 +576,8 @@ public class PvPanel
    */
   public void setTimeslotLengthInMin (int timeslotLengthInMin)
   {
+    if(timeslotLengthInMin <= 0 )
+      throw new IllegalArgumentException();
     this.timeslotLengthInMin = timeslotLengthInMin;
   }
 }

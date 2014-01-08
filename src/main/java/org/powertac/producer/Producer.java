@@ -185,7 +185,16 @@ public abstract class Producer
 
     if (currentSubscription != null && report != null){
       double power = getOutput(report);
-      currentSubscription.usePower(power);
+      tariffEvaluationHelper.init();
+      double[] usage = new double[1];
+      usage[0] = power;
+      
+      if(tariffEvaluationHelper.estimateCost(currentSubscription.getTariff(),
+                                             usage) > 0 )
+        currentSubscription.usePower(power);
+      else
+        // We aren't getting payed for the power production so close it down;
+        log.debug("Didn't produced power due to negative payment");
     }else{
       log.error("No active subscription or null weather report");
     }
@@ -437,6 +446,8 @@ public abstract class Producer
    */
   public void setUpperPowerCap (double upperPowerCap)
   {
+    if(upperPowerCap > 0)
+      throw new IllegalArgumentException("Positive capacity");
     this.upperPowerCap = upperPowerCap;
   }
 
@@ -453,6 +464,8 @@ public abstract class Producer
    */
   public void setName (String name)
   {
+    if(name != null)
+      throw new IllegalArgumentException();
     this.name = name;
   }
 
@@ -669,6 +682,8 @@ public abstract class Producer
    */
   public void setTimeslotLengthInMin (int timeslotLengthInMin)
   {
+    if(timeslotLengthInMin <= 0)
+      throw new IllegalArgumentException();
     this.timeslotLengthInMin = timeslotLengthInMin;
   }
 
@@ -677,6 +692,8 @@ public abstract class Producer
    */
   public void setWeatherReportRepo (WeatherReportRepo weatherReportRepo)
   {
+    if(weatherReportRepo == null)
+      throw new IllegalArgumentException();
     this.weatherReportRepo = weatherReportRepo;
   }
 
@@ -685,6 +702,8 @@ public abstract class Producer
    */
   public void setWeatherForecastRepo (WeatherForecastRepo weatherForecastRepo)
   {
+    if(weatherForecastRepo == null)
+      throw new IllegalArgumentException();
     this.weatherForecastRepo = weatherForecastRepo;
   }
 
@@ -693,6 +712,7 @@ public abstract class Producer
    */
   public void setTimeslotService (TimeslotRepo timeslotService)
   {
+    
     this.timeslotService = timeslotService;
   }
 
@@ -701,6 +721,8 @@ public abstract class Producer
    */
   public void setTimeService (TimeService timeService)
   {
+    if(timeService == null)
+      throw new IllegalArgumentException();
     this.timeService = timeService;
   }
 
@@ -709,6 +731,8 @@ public abstract class Producer
    */
   public void setTariffMarketService (TariffMarket tariffMarketService)
   {
+    if(tariffMarketService == null)
+      throw new IllegalArgumentException();
     this.tariffMarketService = tariffMarketService;
   }
 
@@ -718,6 +742,8 @@ public abstract class Producer
   public void
     setTariffSubscriptionRepo (TariffSubscriptionRepo tariffSubscriptionRepo)
   {
+    if(tariffSubscriptionRepo == null)
+      throw new IllegalArgumentException();
     this.tariffSubscriptionRepo = tariffSubscriptionRepo;
   }
 
@@ -726,6 +752,8 @@ public abstract class Producer
    */
   public void setCustomerRepo (CustomerRepo customerRepo)
   {
+    if(customerRepo == null)
+      throw new IllegalArgumentException();
     this.customerRepo = customerRepo;
   }
 
@@ -734,6 +762,8 @@ public abstract class Producer
    */
   public void setRandomSeedRepo (RandomSeedRepo randomSeedRepo)
   {
+    if(randomSeedRepo == null)
+      throw new IllegalArgumentException();
     this.randomSeedRepo = randomSeedRepo;
   }
 
@@ -742,6 +772,8 @@ public abstract class Producer
    */
   public void setTariffEvaluator (TariffEvaluator tariffEvaluator)
   {
+    if(tariffEvaluator == null)
+      throw new IllegalArgumentException();
     this.tariffEvaluator = tariffEvaluator;
   }
 
@@ -751,6 +783,8 @@ public abstract class Producer
   public void
     setTariffEvaluationHelper (TariffEvaluationHelper tariffEvaluationHelper)
   {
+    if(tariffEvaluationHelper == null)
+      throw new IllegalArgumentException();
     this.tariffEvaluationHelper = tariffEvaluationHelper;
   }
 
@@ -759,6 +793,8 @@ public abstract class Producer
    */
   public void setSeed (RandomSeed seed)
   {
+    if(seed == null)
+      throw new IllegalArgumentException();
     this.seed = seed;
   }
 
@@ -767,6 +803,8 @@ public abstract class Producer
    */
   public void setCurrentSubscription (TariffSubscription currentSubscription)
   {
+    if(currentSubscription == null)
+      throw new IllegalArgumentException();
     this.currentSubscription = currentSubscription;
   }
 
@@ -775,6 +813,8 @@ public abstract class Producer
    */
   public void setProducerAccessor (ProducerAccessor producerAccessor)
   {
+    if(producerAccessor == null)
+      throw new IllegalArgumentException();
     this.producerAccessor = producerAccessor;
   }
 
@@ -783,6 +823,8 @@ public abstract class Producer
    */
   public void setPreferredOutput (double preferredOutput)
   {
+    if(preferredOutput > 0)
+      throw new IllegalArgumentException();
     this.preferredOutput = preferredOutput;
   }
 
@@ -791,6 +833,8 @@ public abstract class Producer
    */
   public void setCustomerInfo (CustomerInfo customerInfo)
   {
+    if(customerInfo == null)
+      throw new IllegalArgumentException();
     this.customerInfo = customerInfo;
   }
 }

@@ -51,20 +51,18 @@ public class Dam extends HydroBase
   }
 
   @Override
-  protected void updateVolume (double inputFlow,double computedFlow)
+  protected void updateVolume (double avarageinputFlow,double computedFlow)
   {
-    this.volume += ( inputFlow - computedFlow) * 3600;
+    this.volume += ( avarageinputFlow - computedFlow) * timeslotLengthInMin * 60;
   }
 
   @Override
-  protected double getFlow (double inputFlow)
+  protected double getFlow (double avarageInputFlow)
   {
     if (preferredOutput == upperPowerCap) {
       return maxFlow;
     }
-    else {
-      return invCurveOut.value(-preferredOutput / height);
-    }
+    return invCurveOut.value(-preferredOutput / height);
   }
 
   @Override
@@ -120,6 +118,8 @@ public class Dam extends HydroBase
    */
   public void setVolumeHeight (Curve volumeHeight)
   {
+    if(volumeHeight == null)
+      throw new IllegalArgumentException();
     this.volumeHeight = volumeHeight;
   }
 }

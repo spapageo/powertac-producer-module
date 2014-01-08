@@ -41,6 +41,8 @@ public class WindFarm extends Producer
    */
   public void addWindTurbine (WindTurbine windTurbine)
   {
+    if(windTurbine == null)
+      return;
     windTurbine.setRs(seed);
     turbines.add(windTurbine);
     windTurbine.setTimeslotLengthInMin(timeslotLengthInMin);
@@ -87,6 +89,8 @@ public class WindFarm extends Producer
     for (WindTurbine wt: turbines) {
       sumOutput += wt.getPowerOutput(temperature, windSpeed);
     }
+    if(Double.isInfinite(sumOutput) || Double.isNaN(sumOutput))
+      throw new IllegalStateException("Power produced isn't a number.");
     return sumOutput;
   }
 

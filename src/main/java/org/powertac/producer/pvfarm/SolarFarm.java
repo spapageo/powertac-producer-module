@@ -45,6 +45,8 @@ public class SolarFarm extends Producer
    */
   public void addPanel (PvPanel panel)
   {
+    if(panel == null)
+      return;
     panelList.add(panel);
     upperPowerCap += panel.getCapacity();
     panel.setTimeslotLengthInMin(timeslotLengthInMin);
@@ -73,6 +75,8 @@ public class SolarFarm extends Producer
                         weatherReport.getTemperature(),
                         weatherReport.getWindSpeed());
     }
+    if(Double.isInfinite(powerSum) || Double.isNaN(powerSum))
+      throw new IllegalStateException("Power produced isn't a number");
     return powerSum;
   }
 

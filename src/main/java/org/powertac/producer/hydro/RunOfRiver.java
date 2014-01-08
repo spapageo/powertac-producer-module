@@ -29,7 +29,7 @@ public class RunOfRiver extends HydroBase
   }
 
   @Override
-  protected void updateVolume (double inputFlow, double computedFlow)
+  protected void updateVolume (double avInputFlow, double computedFlow)
   {
     // no need to do anything
   }
@@ -41,9 +41,9 @@ public class RunOfRiver extends HydroBase
   }
 
   @Override
-  protected double getFlow (double inputFlow)
+  protected double getFlow (double avInputFlow)
   {
-    return inputFlow;
+    return avInputFlow;
   }
 
   @Override

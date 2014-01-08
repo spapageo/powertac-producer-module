@@ -76,6 +76,8 @@ public class Curve
    */
   public void add (double x, double y)
   {
+    if(xy.size() != 0 && x < lastX)
+      throw new IllegalArgumentException("Input arguments in order");
     xy.put(x, y);
     if (firstX == -1) {
       firstX = x;

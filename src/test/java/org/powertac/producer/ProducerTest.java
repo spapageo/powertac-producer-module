@@ -21,11 +21,13 @@ import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
+import org.powertac.common.TariffEvaluationHelper;
 import org.powertac.common.TariffEvaluator;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.TariffSubscription;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.TimeService;
+import org.powertac.common.WeatherReport;
 import org.powertac.common.config.Configurator;
 import org.powertac.common.enumerations.PowerType;
 import org.powertac.common.interfaces.Accounting;
@@ -342,7 +344,31 @@ public class ProducerTest
   @Test
   public void testCalculateOutput(){
     // TODO
+    fail();
   }
   
+  @Test
+  public void testProducePower(){
+    SteamPlant plant = new SteamPlant(10000, 2000, -500000);
+    
+    WeatherReport report = new WeatherReport(5,22, 5, 0.5, 0);
+    
+    WeatherReportRepo rep = mock(WeatherReportRepo.class);
+    when(rep.currentWeatherReport()).thenReturn(report);
+    plant.setWeatherReportRepo(rep);
+    
+    TariffEvaluationHelper help = mock(TariffEvaluationHelper.class);
+    when(help.estimateCost(any(Tariff.class), any(double[].class)))
+      .thenReturn(1.0);
+    plant.setTariffEvaluationHelper(help);
+    
+    TariffSubscription sub = mock(TariffSubscription.class);
+    plant.setCurrentSubscription(sub);
+    
+    plant.consumePower();
+    verify(rep).currentWeatherReport();
+    verify(sub).usePower(anyDouble());
+    verify(help).estimateCost(any(Tariff.class), any(double[].class));
+  }
 
 }

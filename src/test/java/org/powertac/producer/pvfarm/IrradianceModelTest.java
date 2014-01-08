@@ -98,7 +98,7 @@ public class IrradianceModelTest
   }
 
   @Test
-  public void testGetIrradianceOnTiltedPlane () throws FileNotFoundException
+  public void testGetIrradianceOnTiltedPlane ()
   {
     double direct = 800;
     double diffuse = 40;
