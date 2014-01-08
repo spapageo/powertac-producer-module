@@ -47,7 +47,7 @@ public abstract class HydroBase extends Producer
 
     //make the power into kwh
     double power = -getWaterPower(turbEff, waterFlow, height)
-            * timeslotLengthInMin * timeslotLengthInMin/(60 * 1000);
+            * timeslotLengthInMin /(60 * 1000);
 
     updateVolume(inputFlow.value(day));
     updateHeigth();
