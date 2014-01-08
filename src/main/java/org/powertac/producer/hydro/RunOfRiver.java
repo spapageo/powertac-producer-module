@@ -21,10 +21,11 @@ public class RunOfRiver extends HydroBase
 
   public RunOfRiver (Curve inputFlow, double minFlow,
                      double maxFlow, Curve turbineEfficiency,
-                     double initialVolume, double initialHeight, double capacity)
+                     double initialVolume, double initialHeight,double staticLosses,
+                     double capacity)
   {
     super("Run of the river hydro plant", inputFlow, minFlow, maxFlow,
-          turbineEfficiency, initialVolume, initialHeight, capacity);
+          turbineEfficiency, initialVolume, initialHeight, capacity,staticLosses);
   }
 
   @Override

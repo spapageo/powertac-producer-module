@@ -26,10 +26,10 @@ public class Dam extends HydroBase
 
   public Dam (Curve inputFlow, double minFlow, double maxFlow,
               Curve turbineEfficiency, Curve volumeHeigth,
-              double initialVolume, double capacity)
+              double initialVolume, double capacity,double staticLosses)
   {
     super("Dam", inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
-          volumeHeigth.value(initialVolume), capacity);
+          volumeHeigth.value(initialVolume), capacity, staticLosses);
     this.volumeHeight = volumeHeigth;
 
     calculateInvOut();
@@ -41,7 +41,8 @@ public class Dam extends HydroBase
     // calculate inverse curve output function for unit height
     for (double flow = minFlow; flow <= maxFlow; flow +=
       (maxFlow - minFlow) / 10) {
-      double pow = getWaterPower(this.turbineEfficiency.value(flow), flow, 1);
+      double pow = getWaterPower(this.staticLosses,
+                                 this.turbineEfficiency.value(flow), flow, 1);
       c.add(flow, pow);
     }
 

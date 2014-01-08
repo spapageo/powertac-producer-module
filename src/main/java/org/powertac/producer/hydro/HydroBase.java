@@ -21,10 +21,12 @@ public abstract class HydroBase extends Producer
   protected Curve turbineEfficiency;
   protected double volume;
   protected double height;
+  protected double staticLosses;
 
   public HydroBase (String name, Curve inputFlow, double minFlow,
                     double maxFlow, Curve turbineEfficiency,
-                    double initialVolume, double initialHeight, double capacity)
+                    double initialVolume, double initialHeight, double capacity,
+                    double staticLosses)
   {
     // no dam production put both on run of the river
     super(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, capacity);
@@ -34,6 +36,7 @@ public abstract class HydroBase extends Producer
     this.turbineEfficiency = turbineEfficiency;
     this.volume = initialVolume;
     this.height = initialHeight;
+    this.staticLosses = staticLosses;
   }
 
   protected double getOutput (int day)
@@ -46,7 +49,7 @@ public abstract class HydroBase extends Producer
     double turbEff = turbineEfficiency.value(waterFlow/maxFlow);
 
     //make the power into kwh
-    double power = -getWaterPower(turbEff, waterFlow, height)
+    double power = -getWaterPower(staticLosses,turbEff, waterFlow, height)
             * timeslotLengthInMin /(60 * 1000);
 
     updateVolume(inputFlow.value(day));
@@ -57,13 +60,13 @@ public abstract class HydroBase extends Producer
 
   }
 
-  protected double getWaterPower (double turbineEfficiency, double flow,
-                                  double heigth)
+  protected double getWaterPower (double staticLosses, double turbineEfficiency,
+                                  double flow, double heigth)
   {
     if (flow >= minFlow && flow <= maxFlow)
-      return turbineEfficiency * waterDensity * g * heigth * flow;
+      return staticLosses * turbineEfficiency * waterDensity * g * heigth * flow;
     else if (flow > maxFlow)
-      return turbineEfficiency * waterDensity * g * heigth * maxFlow;
+      return staticLosses * turbineEfficiency * waterDensity * g * heigth * maxFlow;
     else
       return 0;
   }

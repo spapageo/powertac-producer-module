@@ -29,7 +29,7 @@ public class HydroBaseTest
     flow.add(365, 9);
     
     Competition.newInstance("Generate output test");
-    RunOfRiver river = new RunOfRiver(flow, 2, 12, efficiency, 0, 50, -100);
+    RunOfRiver river = new RunOfRiver(flow, 2, 12, efficiency, 0, 50, 1, -100);
     double out = river.getOutput(1);
     assertEquals(-0.5*9.80665*999.972*9*50/1000, out,50);
   }

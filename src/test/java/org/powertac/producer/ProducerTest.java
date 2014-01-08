@@ -251,7 +251,7 @@ public class ProducerTest
       inputFlow.add(i, y);
       i++;
     }
-    RunOfRiver plant = new RunOfRiver(inputFlow,0,20,inputFlow,1000,60,-1000);
+    RunOfRiver plant = new RunOfRiver(inputFlow,0,20,inputFlow,1000,60,1,-1000);
     XStream x = new XStream();
     x.autodetectAnnotations(true);
     String out = x.toXML(plant);
