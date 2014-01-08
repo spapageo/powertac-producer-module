@@ -41,12 +41,6 @@ final class IrradianceModel
                                                double solarconstant, double T0,
                                                double Tr, double aw, double Ta)
   {
-    assert (sunaltitude >= 0 && sunaltitude <= 90);
-    assert (T0 >= 0 && T0 <= 1);
-    assert (Tr >= 0 && Tr <= 1);
-    assert (aw >= 0 && aw <= 1);
-    assert (Ta >= 0 && Ta <= 1);
-    assert (solarconstant > 0);
 
     return solarconstant * cos(toRadians(90 - sunaltitude)) * ((T0 * Tr) - aw)
            * Ta;
