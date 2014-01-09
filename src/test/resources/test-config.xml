@@ -34,15 +34,9 @@
 		<constructor-arg value="org.powertac.common.interfaces.CompetitionControl" />
 	</bean>
 
-	<bean id="weatherForecastRepo" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="org.powertac.common.repo.WeatherForecastRepo" />
-	</bean>
+	<bean id="weatherForecastRepo" class="org.powertac.common.repo.WeatherForecastRepo" />
 
-	<bean id="timeslotService" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="org.powertac.common.repo.TimeslotRepo" />
-	</bean>
+	<bean id="timeslotService" class="org.powertac.common.repo.TimeslotRepo" />
 
 	<context:annotation-config />
 

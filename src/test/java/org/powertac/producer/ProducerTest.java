@@ -21,12 +21,13 @@ import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
-import org.powertac.common.TariffEvaluationHelper;
 import org.powertac.common.TariffEvaluator;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.TariffSubscription;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.TimeService;
+import org.powertac.common.WeatherForecast;
+import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.config.Configurator;
 import org.powertac.common.enumerations.PowerType;
@@ -39,6 +40,7 @@ import org.powertac.common.repo.RandomSeedRepo;
 import org.powertac.common.repo.TariffRepo;
 import org.powertac.common.repo.TariffSubscriptionRepo;
 import org.powertac.common.repo.TimeslotRepo;
+import org.powertac.common.repo.WeatherForecastRepo;
 import org.powertac.common.repo.WeatherReportRepo;
 import org.powertac.producer.Producer.PreferredOutput;
 import org.powertac.producer.Producer.ProducerAccessor;
@@ -83,6 +85,9 @@ public class ProducerTest
 
   @Autowired
   private WeatherReportRepo weatherReportRepo;
+  
+  @Autowired
+  private WeatherForecastRepo weatherForecastRepo;
 
   @Autowired
   private BrokerRepo brokerRepo;
@@ -344,7 +349,70 @@ public class ProducerTest
   @Test
   public void testCalculateOutput(){
     // TODO
-    fail();
+    SteamPlant plant = new SteamPlant(10000, 2000, -500000);
+    List<WeatherForecastPrediction> predictions = new ArrayList<>();
+    predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(2, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(3, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(4, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(5, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(6, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(7, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(8, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(9, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(10, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(11, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(12, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(13, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(14, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(15, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(16, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(17, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(18, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(19, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(20, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(21, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(22, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(23, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(24, 22, 5, 0.5, 0));
+
+    assertTrue(predictions.size() == 24);
+    
+    WeatherForecast forecast = new WeatherForecast(timeslotRepo.currentSerialNumber()
+                                                   , predictions);
+    weatherForecastRepo.add(forecast);
+    
+    Rate r = new Rate().withDailyBegin(9).withDailyEnd(13).withValue(-1.0);
+    //Rate r2 = new Rate().withDailyBegin(13).withDailyEnd(9).withValue(+1);
+    //Rate r3 = new Rate().withValue(-0.5);
+        
+    defaultTariff.getTariffSpecification().addRate(r);
+    //defaultTariff.getTariffSpecification().addRate(r2);
+    //defaultTariff.getTariffSpecification().addRate(r3);
+    
+    assertTrue(defaultTariff.init());
+    defaultTariff.setState(Tariff.State.OFFERED);
+    double mon = defaultTariff.getUsageCharge(timeslotRepo.getTimeForIndex(10), -1, 0);
+    assertTrue(mon < 0);
+    mon = defaultTariff.getUsageCharge(timeslotRepo.getTimeForIndex(10), -100000, 0);
+    assertTrue(mon < 0);
+    mon = defaultTariff.getUsageCharge(timeslotRepo.getTimeForIndex(10), -100000, -125000000);
+    assertTrue(mon < 0);
+    assertFalse(defaultTariff.isTiered());
+    
+    double pref = plant.producerAccessor.generateOutput(defaultTariff, 24).preferredOutput;
+    double[] out = plant.producerAccessor.generateOutput(defaultTariff, 24).output;
+    
+    assertTrue(out.length == 24);
+    
+    assertEquals(plant.getUpperPowerCap(), pref,1000);
+    
+    for(double i: out){
+      if(i == 0){
+        return;
+      }
+    }
+    fail("Shouldn't be reachable");
   }
   
   @Test
@@ -357,18 +425,14 @@ public class ProducerTest
     when(rep.currentWeatherReport()).thenReturn(report);
     plant.setWeatherReportRepo(rep);
     
-    TariffEvaluationHelper help = mock(TariffEvaluationHelper.class);
-    when(help.estimateCost(any(Tariff.class), any(double[].class)))
-      .thenReturn(1.0);
-    plant.setTariffEvaluationHelper(help);
-    
     TariffSubscription sub = mock(TariffSubscription.class);
+    when(sub.getTariff()).thenReturn(defaultTariff);
     plant.setCurrentSubscription(sub);
     
     plant.consumePower();
     verify(rep).currentWeatherReport();
     verify(sub).usePower(anyDouble());
-    verify(help).estimateCost(any(Tariff.class), any(double[].class));
+    verify(sub).getTariff();
   }
 
 }
