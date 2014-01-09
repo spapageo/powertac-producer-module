@@ -383,12 +383,8 @@ public class ProducerTest
     weatherForecastRepo.add(forecast);
     
     Rate r = new Rate().withDailyBegin(9).withDailyEnd(13).withValue(-1.0);
-    //Rate r2 = new Rate().withDailyBegin(13).withDailyEnd(9).withValue(+1);
-    //Rate r3 = new Rate().withValue(-0.5);
         
     defaultTariff.getTariffSpecification().addRate(r);
-    //defaultTariff.getTariffSpecification().addRate(r2);
-    //defaultTariff.getTariffSpecification().addRate(r3);
     
     assertTrue(defaultTariff.init());
     defaultTariff.setState(Tariff.State.OFFERED);
@@ -413,6 +409,60 @@ public class ProducerTest
       }
     }
     fail("Shouldn't be reachable");
+  }
+  
+  @Test
+  public void testCalculateOutputTiered(){
+    // TODO
+    SteamPlant plant = new SteamPlant(10000, 2000, -500000);
+    List<WeatherForecastPrediction> predictions = new ArrayList<>();
+    predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(2, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(3, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(4, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(5, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(6, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(7, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(8, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(9, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(10, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(11, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(12, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(13, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(14, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(15, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(16, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(17, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(18, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(19, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(20, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(21, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(22, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(23, 22, 5, 0.5, 0));
+    predictions.add(new WeatherForecastPrediction(24, 22, 5, 0.5, 0));
+
+    assertTrue(predictions.size() == 24);
+    
+    WeatherForecast forecast = new WeatherForecast(timeslotRepo.currentSerialNumber()
+                                                   , predictions);
+    weatherForecastRepo.add(forecast);
+    
+    Rate r = new Rate().withTierThreshold(-12*500000);
+        
+    defaultTariff.getTariffSpecification().addRate(r);
+    
+    assertTrue(defaultTariff.init());
+    defaultTariff.setState(Tariff.State.OFFERED);
+    
+    assertTrue(defaultTariff.isTiered());
+    
+    double pref = plant.producerAccessor.generateOutput(defaultTariff, 24).preferredOutput;
+    double[] out = plant.producerAccessor.generateOutput(defaultTariff, 24).output;
+    
+    assertTrue(out.length == 24);
+    
+    assertTrue( Math.abs(pref) < Math.abs(plant.upperPowerCap));
+ 
   }
   
   @Test

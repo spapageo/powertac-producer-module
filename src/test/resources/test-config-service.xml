@@ -46,7 +46,9 @@
 
 	<bean id="tariffRepo" class="org.powertac.common.repo.TariffRepo" />
 
-	<bean id="tariffSubscriptionRepo" class="org.powertac.common.repo.TariffSubscriptionRepo" />
+	<bean id="tariffSubscriptionRepo" class="org.mockito.Mockito" factory-method="mock" >
+	 <constructor-arg value="org.powertac.common.repo.TariffSubscriptionRepo" />
+	</bean>
 
 	<bean id="timeslotRepo" class="org.powertac.common.repo.TimeslotRepo" />
 

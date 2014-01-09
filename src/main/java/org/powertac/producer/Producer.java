@@ -55,7 +55,7 @@ public abstract class Producer
   private static final int TARIFF_COUNT = 5;
   private static final double BROKER_SWITCH_FACTOR = 0.02;
 
-  
+
   @XStreamOmitField
   protected WeatherReportRepo weatherReportRepo;
   @XStreamOmitField
@@ -83,14 +83,14 @@ public abstract class Producer
   protected TariffSubscription currentSubscription = null;
   @XStreamOmitField
   protected ProducerAccessor producerAccessor;
-  
+
   @XStreamOmitField
   protected double preferredOutput;
   @XStreamOmitField
   protected CustomerInfo customerInfo;
   @XStreamOmitField
   protected long custId;
-  
+
   protected double upperPowerCap;
   @XStreamOmitField
   protected String name;
@@ -121,12 +121,12 @@ public abstract class Producer
   }
 
   protected void initialize(String producerName, PowerType powerType, int profileHours,
-                          double capacity, long id){
+                            double capacity, long id){
     // Initialize all the repositories
     weatherReportRepo = (WeatherReportRepo) SpringApplicationContext
             .getBean("weatherReportRepo");
     weatherForecastRepo = (WeatherForecastRepo) SpringApplicationContext
-              .getBean("weatherForecastRepo");
+            .getBean("weatherForecastRepo");
     timeslotService = (TimeslotRepo) SpringApplicationContext
             .getBean("timeslotService");
     timeService = (TimeService) SpringApplicationContext
@@ -139,10 +139,10 @@ public abstract class Producer
             .getBean("randomSeedRepo");
     tariffSubscriptionRepo = (TariffSubscriptionRepo) SpringApplicationContext
             .getBean("tariffSubscriptionRepo");
-    
+
     this.timeslotLengthInMin = Competition.currentCompetition()
             .getTimeslotLength();
-    
+
     //Initialize the customer info with population 1
     customerInfo = new CustomerInfo(producerName, 1);
     customerInfo.withPowerType(powerType);
@@ -150,13 +150,13 @@ public abstract class Producer
 
     //Initialize the custom object id
     this.custId = id;
-    this.name = producerName + id;
+    this.name = producerName + " " + id;
     //Initialize the random seed
     seed = randomSeedRepo.getRandomSeed(producerName, (int) id, "Misc");
-    
+
     //Initialize the evaluation helper and the tariff evaluator
     tariffEvaluationHelper = new TariffEvaluationHelper();
-    
+
     producerAccessor = new ProducerAccessor(this, profileHours);
 
     tariffEvaluator = new TariffEvaluator(producerAccessor);
@@ -169,14 +169,15 @@ public abstract class Producer
     double weight = seed.nextDouble() * WEIGHT_INCONVENIENCE;
 
     tariffEvaluator.withInconvenienceWeight(weight).withInertia(INNERTIA)
-            .withRationality(RATIONALITY_FACTOR)
-            .withTariffEvalDepth(TARIFF_COUNT)
-            .withTariffSwitchFactor(BROKER_SWITCH_FACTOR);
+    .withRationality(RATIONALITY_FACTOR)
+    .withTariffEvalDepth(TARIFF_COUNT)
+    .withTariffSwitchFactor(BROKER_SWITCH_FACTOR);
 
     this.upperPowerCap = capacity;
     this.preferredOutput = capacity;
+    log.info("Producer initialized: " + this.name);
   }
-  
+
   public void consumePower ()
   {
     // We need to get the Weather report and
@@ -185,7 +186,7 @@ public abstract class Producer
 
     if (currentSubscription != null && report != null){
       double power = getOutput(report);
-      
+
       if(currentSubscription.getTariff()
               .getUsageCharge(power, currentSubscription.getTotalUsage(),false) > 0 )
         currentSubscription.usePower(power);
@@ -200,8 +201,8 @@ public abstract class Producer
   abstract protected double getOutput (WeatherReport weatherReport);
 
   abstract protected double
-    getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction);
+  getOutput (int timeslotIndex,
+             WeatherForecastPrediction weatherForecastPrediction);
 
   public void step ()
   {
@@ -213,18 +214,32 @@ public abstract class Producer
   public void subscribeDefault ()
   {
     PowerType type = customerInfo.getPowerType();
-    if (tariffMarketService.getDefaultTariff(type) == null) {
-      log.info("No default Subscription for type " + type.toString() + " of "
-               + this.toString() + " to subscribe to.");
-    }
-    else {
-      tariffMarketService.subscribeToTariff(tariffMarketService
-              .getDefaultTariff(type), customerInfo, customerInfo.getPopulation());
+    Tariff tariff;
+    if ((tariff = tariffMarketService.getDefaultTariff(type)) != null) {
+      tariffMarketService.subscribeToTariff(tariff,
+                                            customerInfo,
+                                            customerInfo.getPopulation());
       currentSubscription = tariffSubscriptionRepo
-      .findActiveSubscriptionsForCustomer(customerInfo).get(0);
+              .findActiveSubscriptionsForCustomer(customerInfo).get(0);
       log.info("CustomerInfo of type " + type.toString() + " of "
-               + this.toString()
-               + " was subscribed to the default broker successfully.");
+              + this.toString()
+              + " was subscribed to the default broker successfully.");
+    }
+    else if((tariff = tariffMarketService.getDefaultTariff(PowerType.PRODUCTION))
+            != null){
+      
+      tariffMarketService.subscribeToTariff(tariff, customerInfo,
+                                            customerInfo.getPopulation());
+      currentSubscription = tariffSubscriptionRepo
+              .findActiveSubscriptionsForCustomer(customerInfo).get(0);
+      log.info("CustomerInfo of type " + type.toString() + " of "
+              + this.toString()
+              + " was subscribed to the default broker successfully.");
+
+    }
+    else{
+      log.info("No default Subscription for type " + type.toString() + " of "
+              + this.toString() + " to subscribe to.");
     }
   }
 
@@ -235,22 +250,22 @@ public abstract class Producer
     // check if the active tariff changed and recalculate the preferred
     // output
     List<TariffSubscription> subscriptions =
-      tariffSubscriptionRepo
-              .findActiveSubscriptionsForCustomer(customerInfo);
+            tariffSubscriptionRepo
+            .findActiveSubscriptionsForCustomer(customerInfo);
 
     if (subscriptions.size() > 0) {
       if (subscriptions.get(0) != currentSubscription) {
         // update preferred output
         currentSubscription = subscriptions.get(0);
         preferredOutput =
-          producerAccessor.generateOutput(currentSubscription.getTariff(),
-                                          producerAccessor.hours).preferredOutput;
+                producerAccessor.generateOutput(currentSubscription.getTariff(),
+                                                producerAccessor.hours).preferredOutput;
       }
     }
   }
-  
+
   abstract protected Object readResolve();
-  
+
   /**
    * The most important function of this class is to generated the
    * hypothetical load under a specified tariff. These allows the
@@ -262,7 +277,7 @@ public abstract class Producer
    */
   protected static class ProducerAccessor implements CustomerModelAccessor
   {
-    
+
     private Producer parent;
     private int hours;
 
@@ -270,7 +285,7 @@ public abstract class Producer
     {
       if (hours <= 0 || parent == null)
         throw new IllegalArgumentException(
-                         "Negative or zero duration for the Customer profile");
+                "Negative or zero duration for the Customer profile");
       this.parent = parent;
       this.hours = hours;
     }
@@ -287,96 +302,94 @@ public abstract class Producer
     {
       // try and collect forecasts for the requested number of hours
       SortedMap<Integer, WeatherForecastPrediction> predictions =
-        new TreeMap<>();
-      
-      WeatherForecast forecast = parent.weatherForecastRepo.currentWeatherForecast();
-      
-      if(forecast == null){
-        log.error("Got zero weather forecasts on the creation of the customer profile");
-        return new PreferredOutput(parent.preferredOutput, new double[0]);
-      }
-      
-      boolean quit = false;
-      int k = 0;
-      
-      //if the forecasts aren't enough we replicate the rest of the data
-      //Non weather sensitive producer we want this like the fossil plants
-      while(!quit){
-        for (WeatherForecastPrediction prediction: forecast.getPredictions()) {
+              new TreeMap<>();
+
+              WeatherForecast forecast = parent.weatherForecastRepo.currentWeatherForecast();
+
+              if(forecast == null){
+                log.error("Got zero weather forecasts on the creation of the customer profile");
+                return new PreferredOutput(parent.preferredOutput, new double[0]);
+              }
+
+              boolean quit = false;
+              int k = 0;
+
+              //if the forecasts aren't enough we replicate the rest of the data
+              //Non weather sensitive producer we want this like the fossil plants
+              while(!quit){
+                for (WeatherForecastPrediction prediction: forecast.getPredictions()) {
 
 
-          if (predictions.size() >= profileHours){
-            quit = true;
-            break;
-          }else{
-            predictions.put(prediction.getForecastTime()
-                            + forecast.getTimeslotIndex()
-                            + k*forecast.getPredictions().size(), prediction);
-          }
-            
-        }
-        k++;
-      }
+                  if (predictions.size() >= profileHours){
+                    quit = true;
+                    break;
+                  }else{
+                    predictions.put(prediction.getForecastTime()
+                                    + forecast.getTimeslotIndex()
+                                    + k*forecast.getPredictions().size(), prediction);
+                  }
 
-      Iterator<Integer> slotIter = predictions.keySet().iterator();
+                }
+                k++;
+              }
 
-      // Since production is not an
-      // interruptible power type
-      // we don't bother checking for curtailment.
+              Iterator<Integer> slotIter = predictions.keySet().iterator();
 
-      // Instead we can modify the max plant preferred output and select
-      // the lowest one that
-      // provided the highest payments
+              // Since production is not an
+              // interruptible power type
+              // we don't bother checking for curtailment.
 
-      // we want to maximize this
-      double maxPayment = Double.NEGATIVE_INFINITY;
-      // the cached output for which we get the best money
-      double[] maxOuput = null;
-      // the cached preferred output for which we get maximum money
-      double maxPreferredOutput = 0;
-      // save the preferred output to restore later
-      double savePreferredOutput = parent.preferredOutput;
+              // Instead we can modify the max plant preferred output and select
+              // the lowest one that
+              // provided the highest payments
 
-      // CARE Careful on the signs
-      double sum = 0;
-      for (parent.preferredOutput = 0; parent.preferredOutput >= parent.upperPowerCap;
-              parent.preferredOutput += step * parent.upperPowerCap) {
-        
-        //Here we create the usage vector
-        double[] out = new double[predictions.size()];
-        for (int i = 0; i < out.length; i++) {
-          int timeslot = slotIter.next();
-          double usage = parent.getOutput(timeslot, predictions.get(timeslot));
-          double charge = tariff.getUsageCharge(parent.timeslotService.getTimeForIndex(timeslot),
-                                                usage,sum);
-          System.out.println(charge + " " + timeslot + " " + usage);
-          
-          if(charge > 0){
-            out[i] = usage;
-            sum += usage;
-          }else{
-            out[i] = 0;
-          }
-        }
-        // calculate the money
-        double money = parent.tariffEvaluationHelper.estimateCost(tariff, out, true);
-        
-        //Check if it more advantageous
-        if (money > maxPayment) {
-          maxPayment = money;
-          maxOuput = out;
-          maxPreferredOutput = parent.preferredOutput;
-        }
-        // reset the iterator
-        slotIter = predictions.keySet().iterator();
-      }
+              // we want to maximize this
+              double maxPayment = Double.NEGATIVE_INFINITY;
+              // the cached output for which we get the best money
+              double[] maxOuput = null;
+              // the cached preferred output for which we get maximum money
+              double maxPreferredOutput = 0;
+              // save the preferred output to restore later
+              double savePreferredOutput = parent.preferredOutput;
 
-      // restore the preferred output
-      parent.preferredOutput = savePreferredOutput;
+              // CARE Careful on the signs
+              double sum = 0;
+              for (parent.preferredOutput = 0; parent.preferredOutput >= parent.upperPowerCap;
+                      parent.preferredOutput += step * parent.upperPowerCap) {
 
-      return new PreferredOutput(maxPreferredOutput, maxOuput);
+                //Here we create the usage vector
+                double[] out = new double[predictions.size()];
+                for (int i = 0; i < out.length; i++) {
+                  int timeslot = slotIter.next();
+                  double usage = parent.getOutput(timeslot, predictions.get(timeslot));
+                  double charge = tariff.getUsageCharge(parent.timeslotService.getTimeForIndex(timeslot),
+                                                        usage,sum);          
+                  if(charge > 0){
+                    out[i] = usage;
+                    sum += usage;
+                  }else{
+                    out[i] = 0;
+                  }
+                }
+                // calculate the money
+                double money = parent.tariffEvaluationHelper.estimateCost(tariff, out, true);
+
+                //Check if it more advantageous
+                if (money > maxPayment) {
+                  maxPayment = money;
+                  maxOuput = out;
+                  maxPreferredOutput = parent.preferredOutput;
+                }
+                // reset the iterator
+                slotIter = predictions.keySet().iterator();
+              }
+
+              // restore the preferred output
+              parent.preferredOutput = savePreferredOutput;
+
+              return new PreferredOutput(maxPreferredOutput, maxOuput);
     }
-    
+
     @Override
     public CustomerInfo getCustomerInfo ()
     {
@@ -722,7 +735,7 @@ public abstract class Producer
    */
   public void setTimeslotService (TimeslotRepo timeslotService)
   {
-    
+
     this.timeslotService = timeslotService;
   }
 
@@ -750,7 +763,7 @@ public abstract class Producer
    * @param tariffSubscriptionRepo the tariffSubscriptionRepo to set
    */
   public void
-    setTariffSubscriptionRepo (TariffSubscriptionRepo tariffSubscriptionRepo)
+  setTariffSubscriptionRepo (TariffSubscriptionRepo tariffSubscriptionRepo)
   {
     if(tariffSubscriptionRepo == null)
       throw new IllegalArgumentException();
@@ -791,7 +804,7 @@ public abstract class Producer
    * @param tariffEvaluationHelper the tariffEvaluationHelper to set
    */
   public void
-    setTariffEvaluationHelper (TariffEvaluationHelper tariffEvaluationHelper)
+  setTariffEvaluationHelper (TariffEvaluationHelper tariffEvaluationHelper)
   {
     if(tariffEvaluationHelper == null)
       throw new IllegalArgumentException();
