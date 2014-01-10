@@ -31,7 +31,7 @@ public class Dam extends HydroBase
     super("Dam", inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
           volumeHeigth.value(initialVolume), capacity, staticLosses);
     this.volumeHeight = volumeHeigth;
-
+    this.costPerKwh = 0.03;
     calculateInvOut();
   }
 
@@ -59,10 +59,10 @@ public class Dam extends HydroBase
   @Override
   protected double getFlow (double avarageInputFlow)
   {
-    if (preferredOutput == upperPowerCap) {
-      return maxFlow;
-    }
-    return invCurveOut.value(-preferredOutput / height);
+    if(height != 0)
+      return invCurveOut.value(-preferredOutput / height);
+    else
+      return avarageInputFlow;
   }
 
   @Override
@@ -82,7 +82,7 @@ public class Dam extends HydroBase
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction)
   {
-    return getOutput(this.timeslotService.getTimeForIndex(timeslotIndex)
+    return getOutput(this.timeslotRepo.getTimeForIndex(timeslotIndex)
             .toDateTime().getDayOfYear());
   }
 

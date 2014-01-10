@@ -38,7 +38,9 @@ public class SteamPlant extends Producer
     this.lastOutput = capacity;
     this.adjustmentSpeed = adjustmentSpeed;
     this.diviation = diviation;
-
+    this.co2Emissions = 1.5;
+    this.costPerKwh = 0.1;
+    
   }
 
   public double getOutput ()

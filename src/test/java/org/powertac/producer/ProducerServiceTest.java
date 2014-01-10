@@ -208,7 +208,13 @@ public class ProducerServiceTest
   @Test
   public void testActivate ()
   {
-    fail("Not yet implemented");
+    List<Producer> l = new ArrayList<>();
+    Producer prod = mock(Producer.class);
+    l.add(prod);
+    producerService.setProducerList(l);
+    producerService.activate(null, 0);
+    
+    verify(prod).step();
   }
 
   @Test
@@ -232,17 +238,41 @@ public class ProducerServiceTest
     assertTrue(producerService.getProducerList().size() > 0);
     assertTrue(producerService.getProducerList().get(0).currentSubscription != null);
   }
-
+  
   @Test
-  public void testLoadProducers ()
-  {
-    fail("Not yet implemented");
+  public void testConfigure(){
+    List<String> inits = new ArrayList<String>();
+    inits.add("DefaultBroker");
+    
+    TariffSubscription sub = mock(TariffSubscription.class);
+    
+    List<TariffSubscription> l = new ArrayList<>();
+    
+    l.add(sub);
+    
+    Configurator conf = new Configurator();
+    
+    TreeMap<String, String> map = new TreeMap<String, String>();
+    map.put("producer.producerService.producerFileFolder", "bla");
+    Configuration mapConfig = new MapConfiguration(map);
+    conf.setConfiguration(mapConfig);
+    conf.configureSingleton(producerService);
+    assertTrue(producerService.getProducerFileFolder() != null);
+    
+    when(mockTariffSubscriptionRepo.
+         findActiveSubscriptionsForCustomer(any(CustomerInfo.class)))
+    .thenReturn(l);
   }
 
   @Test
   public void testPublishNewTariffs ()
   {
-    fail("Not yet implemented");
+    List<Producer> l = new ArrayList<>();
+    Producer prod = mock(Producer.class);
+    l.add(prod);
+    producerService.setProducerList(l);
+    producerService.publishNewTariffs(null);
+    verify(prod).evaluateNewTariffs();
   }
 
 }

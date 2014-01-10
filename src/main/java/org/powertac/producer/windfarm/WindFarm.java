@@ -27,6 +27,7 @@ public class WindFarm extends Producer
   public WindFarm ()
   {
     super("Wind farm",PowerType.WIND_PRODUCTION, 24, 0);
+    this.costPerKwh = 0.08;
   }
 
   // The list of turbines in this farm

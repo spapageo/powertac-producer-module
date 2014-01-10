@@ -1,0 +1,125 @@
+<solar-farm co2Emissions="0.0" costPerKwh="0.14" hourlyMaintenanceCost="0.0" upperPowerCap="-200.0">
+  <panel>
+    <panelArrea>10.0</panelArrea>
+    <panelLatitude>22.0</panelLatitude>
+    <panelLongitude>22.0</panelLongitude>
+    <panelAzimuth>180.0</panelAzimuth>
+    <panelTilt>45.0</panelTilt>
+    <panelEfficiency>0.35</panelEfficiency>
+    <groundAlbedo>0.2</groundAlbedo>
+    <humidity>0.2</humidity>
+    <ozoneLayerDepth>3.0</ozoneLayerDepth>
+    <pressure>101325.0</pressure>
+    <Ta>0.95</Ta>
+    <w0>0.95</w0>
+    <p>0.95</p>
+    <q>0.33</q>
+    <r>-1.06</r>
+    <s>0.0</s>
+    <m>0.0</m>
+    <b>0.0045</b>
+    <Tref>313.15</Tref>
+    <staticLosses>0.78</staticLosses>
+    <clearIndex>0.2</clearIndex>
+    <capacity>-2.0</capacity>
+  </panel>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+  <panel reference="../panel"/>
+</solar-farm>

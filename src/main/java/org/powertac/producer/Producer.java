@@ -32,6 +32,7 @@ import org.powertac.common.repo.WeatherForecastRepo;
 import org.powertac.common.repo.WeatherReportRepo;
 import org.powertac.common.spring.SpringApplicationContext;
 
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
@@ -55,13 +56,12 @@ public abstract class Producer
   private static final int TARIFF_COUNT = 5;
   private static final double BROKER_SWITCH_FACTOR = 0.02;
 
-
   @XStreamOmitField
   protected WeatherReportRepo weatherReportRepo;
   @XStreamOmitField
   protected WeatherForecastRepo weatherForecastRepo;
   @XStreamOmitField
-  protected TimeslotRepo timeslotService;
+  protected TimeslotRepo timeslotRepo;
   @XStreamOmitField
   protected TimeService timeService;
   @XStreamOmitField
@@ -90,14 +90,20 @@ public abstract class Producer
   protected CustomerInfo customerInfo;
   @XStreamOmitField
   protected long custId;
-
-  protected double upperPowerCap;
   @XStreamOmitField
   protected String name;
   @XStreamOmitField
   protected int timeslotLengthInMin;
 
-
+  @XStreamAsAttribute
+  protected double co2Emissions = 0;
+  @XStreamAsAttribute
+  protected double costPerKwh = 0;
+  @XStreamAsAttribute
+  protected double hourlyMaintenanceCost = 0;
+  @XStreamAsAttribute
+  protected double upperPowerCap;
+  
   /**
    * The constructor of a producer.
    * 
@@ -127,8 +133,8 @@ public abstract class Producer
             .getBean("weatherReportRepo");
     weatherForecastRepo = (WeatherForecastRepo) SpringApplicationContext
             .getBean("weatherForecastRepo");
-    timeslotService = (TimeslotRepo) SpringApplicationContext
-            .getBean("timeslotService");
+    timeslotRepo = (TimeslotRepo) SpringApplicationContext
+            .getBean("timeslotRepo");
     timeService = (TimeService) SpringApplicationContext
             .getBean("timeService");
     customerRepo = (CustomerRepo) SpringApplicationContext
@@ -188,11 +194,13 @@ public abstract class Producer
       double power = getOutput(report);
 
       if(currentSubscription.getTariff()
-              .getUsageCharge(power, currentSubscription.getTotalUsage(),false) > 0 )
+              .getUsageCharge(power, currentSubscription.getTotalUsage(),false) > 0 ){
         currentSubscription.usePower(power);
-      else
+        log.info("Producer: " + name + " Usage: " + power);
+      }else{
         // We aren't getting payed for the power production so close it down;
         log.debug("Didn't produced power due to negative payment");
+      }
     }else{
       log.error("No active subscription or null weather report");
     }
@@ -362,7 +370,7 @@ public abstract class Producer
                 for (int i = 0; i < out.length; i++) {
                   int timeslot = slotIter.next();
                   double usage = parent.getOutput(timeslot, predictions.get(timeslot));
-                  double charge = tariff.getUsageCharge(parent.timeslotService.getTimeForIndex(timeslot),
+                  double charge = tariff.getUsageCharge(parent.timeslotRepo.getTimeForIndex(timeslot),
                                                         usage,sum);          
                   if(charge > 0){
                     out[i] = usage;
@@ -591,9 +599,9 @@ public abstract class Producer
   /**
    * @return the timeslotService
    */
-  public TimeslotRepo getTimeslotService ()
+  public TimeslotRepo getTimeslotRepo ()
   {
-    return timeslotService;
+    return timeslotRepo;
   }
 
   /**
@@ -733,10 +741,10 @@ public abstract class Producer
   /**
    * @param timeslotService the timeslotService to set
    */
-  public void setTimeslotService (TimeslotRepo timeslotService)
+  public void setTimeslotRepo (TimeslotRepo timeslotRepo)
   {
 
-    this.timeslotService = timeslotService;
+    this.timeslotRepo = timeslotRepo;
   }
 
   /**
@@ -859,5 +867,59 @@ public abstract class Producer
     if(customerInfo == null)
       throw new IllegalArgumentException();
     this.customerInfo = customerInfo;
+  }
+
+  /**
+   * @return the co2Emissions
+   */
+  public double getCo2Emissions ()
+  {
+    return co2Emissions;
+  }
+
+  /**
+   * @param co2Emissions the co2Emissions to set
+   */
+  public void setCo2Emissions (double co2Emissions)
+  {
+    if(co2Emissions < 0)
+      throw new IllegalArgumentException();
+    this.co2Emissions = co2Emissions;
+  }
+
+  /**
+   * @return the costPerKw
+   */
+  public double getCostPerKw ()
+  {
+    return costPerKwh;
+  }
+
+  /**
+   * @param costPerKw the costPerKw to set
+   */
+  public void setCostPerKw (double costPerKw)
+  {
+    if(costPerKw < 0)
+      throw new IllegalArgumentException();
+    this.costPerKwh = costPerKw;
+  }
+
+  /**
+   * @return the hourlyMaintenanceCost
+   */
+  public double getHourlyMaintenanceCost ()
+  {
+    return hourlyMaintenanceCost;
+  }
+
+  /**
+   * @param hourlyMaintenanceCost the hourlyMaintenanceCost to set
+   */
+  public void setHourlyMaintenanceCost (double hourlyMaintenanceCost)
+  {
+    if(hourlyMaintenanceCost < 0)
+      throw new IllegalArgumentException();
+    this.hourlyMaintenanceCost = hourlyMaintenanceCost;
   }
 }

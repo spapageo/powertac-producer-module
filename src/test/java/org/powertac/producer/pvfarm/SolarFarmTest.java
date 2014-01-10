@@ -1,6 +1,4 @@
-package org.powertac.producer.fossil;
-
-import static org.junit.Assert.*;
+package org.powertac.producer.pvfarm;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,30 +15,25 @@ import com.thoughtworks.xstream.XStream;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:test-config.xml" })
 @DirtiesContext
-public class SteamPlantTest
+public class SolarFarmTest
 {
 
   @Test
-  public void testGetOutput()
-  {
-    Competition.newInstance("Fossil Plant test");
-    SteamPlant plant = new SteamPlant(10000, 5000, -500000);
-    assertEquals(-500000,plant.getOutput(), 10000);
-    
-    plant = new SteamPlant(10000, 5000, -500000);
-    plant.setPreferredOutput(-200000);
-    assertEquals(-200000,plant.getOutput(), 100000);
-  }
-  
-  @Test
   public void dataGenerateXML() throws IOException
   {
-    Competition.newInstance("Fossil Plant test");
-    SteamPlant plant = new SteamPlant(10000, 5000, -500000);
+    Competition.newInstance("Solar famr xml");
+    SolarFarm farm = new SolarFarm();
+    PvPanel panel = new PvPanel(10, 22, 22, 180, 45, 0.35, -2);
+    
+    //100 panels
+    for(int i = 0;i < 100; i++)
+      farm.addPanel(panel);
+    
+    FileWriter fw = new FileWriter("data/solar-farm.xml");
     XStream xstream = new XStream();
     xstream.autodetectAnnotations(true);
-    FileWriter fw = new FileWriter("data/steam-plant.xml");
-    xstream.toXML(plant,fw);
+    xstream.toXML(farm, fw);
+    
     fw.close();
   }
 

@@ -47,7 +47,8 @@ public class PvPanel
     if (panelArrea <= 0 || panelLatitude > 90 || panelLatitude < -90
         || panelAzimuth > 360 || panelAzimuth < 0 || panelTilt > 90
         || panelTilt < 0 || referenceEfficiency < 0 || capacity > 0
-        || panelLongitude <= -180 || panelLongitude >= 180)
+        || panelLongitude <= -180 || panelLongitude >= 180 
+        || referenceEfficiency > 1)
       throw new IllegalArgumentException();
     this.panelArrea = panelArrea;
     this.panelLatitude = panelLatitude;
@@ -158,7 +159,7 @@ public class PvPanel
 
     if(Double.isInfinite(sum) || Double.isNaN(sum))
       throw new IllegalStateException("Power produced isn't a number");
-    return -sum / 60;
+    return -sum / (1000*60);
   }
 
   /**

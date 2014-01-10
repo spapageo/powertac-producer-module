@@ -205,7 +205,7 @@ public class ProducerTest
     assertNotNull(plant.tariffMarketService);
     assertNotNull(plant.tariffSubscriptionRepo);
     assertNotNull(plant.timeService);
-    assertNotNull(plant.timeslotService);
+    assertNotNull(plant.timeslotRepo);
     assertNotNull(plant.weatherForecastRepo);
     assertNotNull(plant.weatherReportRepo);
     assertTrue(plant.preferredOutput == plant.upperPowerCap);
@@ -274,7 +274,7 @@ public class ProducerTest
     assertNotNull(plant.tariffMarketService);
     assertNotNull(plant.tariffSubscriptionRepo);
     assertNotNull(plant.timeService);
-    assertNotNull(plant.timeslotService);
+    assertNotNull(plant.timeslotRepo);
     assertNotNull(plant.weatherForecastRepo);
     assertNotNull(plant.weatherReportRepo);
     assertTrue(plant.preferredOutput == plant.upperPowerCap);

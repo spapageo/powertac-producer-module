@@ -1,0 +1,47 @@
+<wind-farm co2Emissions="0.0" costPerKwh="0.08" hourlyMaintenanceCost="0.0" upperPowerCap="-26000.0">
+  <turbine>
+    <latitude>22.0</latitude>
+    <refAltitude>10.0</refAltitude>
+    <surfaceRoughness>0.01</surfaceRoughness>
+    <kappa>0.4</kappa>
+    <ratedOutput>-2000.0</ratedOutput>
+    <hubHeigth>80.0</hubHeigth>
+    <powerCurve last-value="0.0">
+      <entry x="3.0">0.0</entry>
+      <entry x="4.0">-66.0</entry>
+      <entry x="5.0">-166.0</entry>
+      <entry x="6.0">-288.0</entry>
+      <entry x="7.0">-473.0</entry>
+      <entry x="8.0">-709.0</entry>
+      <entry x="9.0">-1000.0</entry>
+      <entry x="10.0">-1316.0</entry>
+      <entry x="11.0">-1651.0</entry>
+      <entry x="12.0">-1860.0</entry>
+      <entry x="13.0">-1968.0</entry>
+      <entry x="14.0">-2000.0</entry>
+      <entry x="15.0">-2000.0</entry>
+      <entry x="16.0">-2000.0</entry>
+      <entry x="17.0">-2000.0</entry>
+      <entry x="18.0">-2000.0</entry>
+      <entry x="19.0">-2000.0</entry>
+      <entry x="20.0">-2000.0</entry>
+      <entry x="21.0">-2000.0</entry>
+      <entry x="22.0">-2000.0</entry>
+      <entry x="23.0">-2000.0</entry>
+      <entry x="24.0">-2000.0</entry>
+      <entry x="25.0">-2000.0</entry>
+    </powerCurve>
+  </turbine>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+  <turbine reference="../turbine"/>
+</wind-farm>

@@ -26,6 +26,7 @@ public class RunOfRiver extends HydroBase
   {
     super("Run of the river hydro plant", inputFlow, minFlow, maxFlow,
           turbineEfficiency, initialVolume, initialHeight, capacity,staticLosses);
+    this.costPerKwh = 0.08;
   }
 
   @Override
@@ -57,7 +58,7 @@ public class RunOfRiver extends HydroBase
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction)
   {
-    return getOutput(this.timeslotService.getTimeForIndex(timeslotIndex)
+    return getOutput(this.timeslotRepo.getTimeForIndex(timeslotIndex)
             .toDateTime().getDayOfYear());
   }
 

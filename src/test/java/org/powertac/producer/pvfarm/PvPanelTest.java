@@ -15,7 +15,7 @@ public class PvPanelTest
   {
     XStream x = new XStream();
     x.autodetectAnnotations(true);
-    PvPanel panel = new PvPanel(10, 22, 22, 180, 30, 30, -1);
+    PvPanel panel = new PvPanel(10, 22, 22, 180, 30, 0.3, -1);
     String out = x.toXML(panel);
     panel = (PvPanel) x.fromXML(out);
     assertTrue(panel.getCapacity() == -1);
@@ -29,10 +29,10 @@ public class PvPanelTest
     long startTime = System.currentTimeMillis();
     double outSum = 0.0;
     for(int i = 0; i < 24; i++){
-      outSum += panel.getOutput(startTime,TimeZone.getDefault(), 0, 35, 4);
+      outSum += panel.getOutput(startTime,TimeZone.getDefault(), 0, 308, 4);
       startTime += 60*60*1000;
     }
-    assertTrue(outSum > -3000);
+    assertTrue(outSum > -2);
   }
 
 }

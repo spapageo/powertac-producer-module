@@ -36,6 +36,7 @@ public class SolarFarm extends Producer
   public SolarFarm ()
   {
     super("Solar farm", PowerType.SOLAR_PRODUCTION, 24, 0);
+    this.costPerKwh = 0.14;
   }
 
   /**
@@ -64,10 +65,10 @@ public class SolarFarm extends Producer
   {
     double powerSum = 0;
     long systemTime =
-      timeslotService.getTimeForIndex(weatherReport.getTimeslotIndex())
+      timeslotRepo.getTimeForIndex(weatherReport.getTimeslotIndex())
               .getMillis();
     TimeZone timezone =
-      timeslotService.getTimeForIndex(weatherReport.getTimeslotIndex())
+      timeslotRepo.getTimeForIndex(weatherReport.getTimeslotIndex())
               .getZone().toTimeZone();
     for (PvPanel panel: panelList) {
       powerSum +=
@@ -93,9 +94,9 @@ public class SolarFarm extends Producer
   {
     double powerSum = 0;
     long systemTime =
-      timeslotService.getTimeForIndex(timeslotIndex).getMillis();
+      timeslotRepo.getTimeForIndex(timeslotIndex).getMillis();
     TimeZone timezone =
-      timeslotService.getTimeForIndex(timeslotIndex).getZone().toTimeZone();
+      timeslotRepo.getTimeForIndex(timeslotIndex).getZone().toTimeZone();
     for (PvPanel panel: panelList) {
       powerSum +=
         panel.getOutput(systemTime, timezone,
