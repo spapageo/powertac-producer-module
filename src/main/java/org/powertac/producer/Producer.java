@@ -206,10 +206,11 @@ public abstract class Producer
 
     if (currentSubscription != null && report != null) {
       double power = getOutput(report);
-
-      if (currentSubscription
+      double charge = currentSubscription
               .getTariff()
-              .getUsageCharge(power, currentSubscription.getTotalUsage(), false) > 0) {
+              .getUsageCharge(power, currentSubscription.getTotalUsage(), false);
+      if ( charge > costPerKwh*power +
+              hourlyMaintenanceCost*timeslotLengthInMin/60) {
         currentSubscription.usePower(power);
         log.info("Producer: " + name + " Usage: " + power);
       }
@@ -392,7 +393,8 @@ public abstract class Producer
           double charge =
             tariff.getUsageCharge(parent.timeslotRepo.getTimeForIndex(timeslot),
                                   usage, sum);
-          if (charge > 0) {
+          if (charge > parent.costPerKwh*usage +
+                  parent.hourlyMaintenanceCost*parent.timeslotLengthInMin/60) {
             out[i] = usage;
             sum += usage;
           }
