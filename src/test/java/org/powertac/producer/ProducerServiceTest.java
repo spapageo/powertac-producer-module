@@ -249,7 +249,7 @@ public class ProducerServiceTest
             .thenReturn(l);
 
     producerService.initialize(comp, inits);
-    assertTrue(producerService.getProducerFileFolder().contains("conf"));
+    assertNull(producerService.getProducerFileFolder());
     assertTrue(producerService.getProducerList().size() > 0);
     assertTrue(producerService.getProducerList().get(0).currentSubscription != null);
   }

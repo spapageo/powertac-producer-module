@@ -48,6 +48,9 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
+ * This is the base class that all the producers extend and implement it's
+ * abstract methods. It is based on the AbstractCustomer put doesn't inherit
+ * from it to make serialization easier 
  * @author Spyros Papageorgiou
  * 
  */
@@ -96,23 +99,33 @@ public abstract class Producer
   @XStreamOmitField
   protected ProducerAccessor producerAccessor;
 
+  
+  // The preferred plant output. It is up to the plant if it can change its
+  // output to much this value. The units are kwh. Must be negative.
   @XStreamOmitField
   protected double preferredOutput;
   @XStreamOmitField
   protected CustomerInfo customerInfo;
+  // Random id
   @XStreamOmitField
   protected long custId;
+  // The plant name. Should be unique.
   @XStreamOmitField
   protected String name;
+  // The time slot length in minutes.
   @XStreamOmitField
   protected int timeslotLengthInMin;
 
+  //The plant co2 emissions per kwh. Must be positive.
   @XStreamAsAttribute
   protected double co2Emissions = 0;
+  //The cost per kwh. Must be a positive number
   @XStreamAsAttribute
   protected double costPerKwh = 0;
+  //Hourly maintenance cost. Must be a positive number
   @XStreamAsAttribute
   protected double hourlyMaintenanceCost = 0;
+  //The upper plant capacity. Must be negative
   @XStreamAsAttribute
   protected double upperPowerCap;
 
@@ -198,6 +211,9 @@ public abstract class Producer
     log.info("Producer initialized: " + this.name);
   }
 
+  /*
+   * This functions produces the power from the plant if it possible.
+   */
   public void consumePower ()
   {
     // We need to get the Weather report and
@@ -224,13 +240,29 @@ public abstract class Producer
     }
   }
 
+  /**
+   * This function calculate the plant output based on the weather report
+   * @param weatherReport
+   * @return the plant output, must be negative or zero
+   */
   abstract protected double getOutput (WeatherReport weatherReport);
 
+  /**
+   * This function calculate the plant output based on the weather forecast
+   * @param timeslotIndex
+   * @param weatherForecastPrediction
+   * @param previousOutput Some plants depend one the last
+   *  output to compute the next
+   * @return the plant predicted output, must be negative or zero
+   */
   abstract protected double
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput);
 
+  /**
+   * This is called every time slot.
+   */
   public void step ()
   {
     // We produce power here for the active tariff
@@ -238,6 +270,10 @@ public abstract class Producer
     consumePower();
   }
 
+  /**
+   * This function subscribed to the default tariff for production of this type
+   * or of the more general PRODUCTION type.
+   */
   public void subscribeDefault ()
   {
     PowerType type = customerInfo.getPowerType();
@@ -271,6 +307,11 @@ public abstract class Producer
     }
   }
 
+  /**
+   * Called when new tariff are available.The evaluating is delegated to the
+   * {@link TariffEvaluator}. Also we update the current subscription if it has
+   * changed.
+   */
   public void evaluateNewTariffs ()
   {
     tariffEvaluator.evaluateTariffs();
@@ -291,6 +332,11 @@ public abstract class Producer
     }
   }
 
+  /**
+   * Called after deserialization. Must be implemented by the producers.
+   * The implementation must call Producer.initialize();
+   * @return returns a reference to the producer a.k.a this
+   */
   abstract protected Object readResolve ();
 
   /**
@@ -302,7 +348,7 @@ public abstract class Producer
    * @author Spyros Papageorgiou
    * 
    */
-  protected static class ProducerAccessor implements CustomerModelAccessor
+  public static class ProducerAccessor implements CustomerModelAccessor
   {
 
     private Producer parent;
@@ -461,6 +507,11 @@ public abstract class Producer
 
   }
 
+  /**
+   * Helper class
+   * @author Doom
+   *
+   */
   protected static class PreferredOutput
   {
     public PreferredOutput (double preferredOutput, double[] output)

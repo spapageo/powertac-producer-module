@@ -18,7 +18,7 @@ package org.powertac.producer;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,12 +49,17 @@ import org.springframework.stereotype.Service;
 import com.thoughtworks.xstream.XStream;
 
 /**
+ * This service takes care of:
+ * - the initialization of all the producers.
+ * - the propagation of tariff updates to them.
+ * - the time slot activations of the producers.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 @Service
 public class ProducerService extends TimeslotPhaseProcessor
-  implements NewTariffListener, InitializationService
+implements NewTariffListener, InitializationService
 {
 
   /**
@@ -63,7 +68,7 @@ public class ProducerService extends TimeslotPhaseProcessor
    * debugging.
    */
   static final private Logger log = Logger.getLogger(ProducerService.class
-          .getName());
+                                                     .getName());
 
   @Autowired
   private TariffMarket tariffMarketService;
@@ -76,6 +81,12 @@ public class ProducerService extends TimeslotPhaseProcessor
 
   // The place where the xml files of the producers are stored
   private String producerFileFolder;
+
+  private final String[] defaultProducers = {"/conf/dam.xml",
+                                             "/conf/runoftheriver.xml",
+                                             "/conf/solar-farm.xml",
+                                             "/conf/steam-plant.xml",
+                                             "/conf/wind-farm.xml"};
 
   private List<Producer> producerList = new ArrayList<>();
 
@@ -92,7 +103,7 @@ public class ProducerService extends TimeslotPhaseProcessor
 
   @Override
   public String
-    initialize (Competition competition, List<String> completedInits)
+  initialize (Competition competition, List<String> completedInits)
   {
     int index = completedInits.indexOf("DefaultBroker");
     if (index == -1) {
@@ -101,20 +112,21 @@ public class ProducerService extends TimeslotPhaseProcessor
 
     serverPropertiesService.configureMe(this);
     if (producerFileFolder == null)
-      producerFileFolder =
-        ProducerService.class.getResource("/conf").toString();
-    log.info("The configuration folder is located at: " + producerFileFolder);
+      log.error("The supplied configuration path was invalid. Will load default "
+              + "implementations.");
+    else
+      log.info("The configuration folder is located at: " + producerFileFolder);
+
 
     // Clear the list of producers and create new ones
     producerList.clear();
 
     tariffMarketService.registerNewTariffListener(this);
 
-    // TODO take care of deserialization
     try {
       producerList = loadProducers();
     }
-    catch (IOException e) {
+    catch (Exception e) {
       throw new PowerTacException(e);
     }
 
@@ -129,12 +141,7 @@ public class ProducerService extends TimeslotPhaseProcessor
 
   protected List<Producer> loadProducers () throws IOException
   {
-    File confFolder = new File(new URL(this.producerFileFolder).getFile());
-    List<Producer> list = new ArrayList<>();
-    if (!confFolder.isDirectory() || !confFolder.exists()) {
-      log.error("The supplied configuration path was invalid.");
-      return list;
-    }
+    List<Producer> producers = new ArrayList<>();
 
     FileFilter filter = new FileFilter() {
       @Override
@@ -159,17 +166,38 @@ public class ProducerService extends TimeslotPhaseProcessor
     xstream.processAnnotations(PvPanel.class);
     xstream.processAnnotations(Producer.class);
 
-    for (File conf: confFolder.listFiles(filter)) {
-      String name = conf.toString().toLowerCase();
-      if (name.contains("steam") || name.contains("dam")
-          || name.contains("river") || name.contains("solar")
-          || name.contains("wind")) {
-        Producer producer = (Producer) xstream.fromXML(conf);
-        list.add(producer);
+
+    
+    if(producerFileFolder == null)
+    {
+      for(String name : defaultProducers)
+      {
+        InputStream stream = ProducerService.class.getResourceAsStream(name);
+        Producer producer = (Producer) xstream.fromXML(stream);
+        producers.add(producer);
+        stream.close();
+      }
+      return producers;
+    }
+    
+    File confFolder = new File(this.producerFileFolder);
+    if (!confFolder.isDirectory() || !confFolder.exists())
+    {
+      log.error("The supplied configuration path was invalid.");
+    }
+    else
+    {
+      for (File conf: confFolder.listFiles(filter)) {
+        String name = conf.toString().toLowerCase();
+        if (name.contains("steam") || name.contains("dam")
+                || name.contains("river") || name.contains("solar")
+                || name.contains("wind")) {
+          Producer producer = (Producer) xstream.fromXML(conf);
+          producers.add(producer);
+        }
       }
     }
-
-    return list;
+    return producers;
   }
 
   @Override
@@ -209,7 +237,7 @@ public class ProducerService extends TimeslotPhaseProcessor
    */
   @ConfigurableValue(valueType = "String", description = "The root of the xml configurations files.")
   public
-    void setProducerFileFolder (String producerFileFolder)
+  void setProducerFileFolder (String producerFileFolder)
   {
     this.producerFileFolder = producerFileFolder;
   }

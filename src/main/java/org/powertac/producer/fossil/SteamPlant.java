@@ -28,6 +28,8 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import static java.lang.Math.*;
 
 /**
+ * Represents a fossil plant mainly based on steam or gas.
+ * 
  * @author Doom
  * 
  */
