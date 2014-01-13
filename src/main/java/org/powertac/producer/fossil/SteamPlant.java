@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.fossil;
 
 import org.powertac.common.IdGenerator;
@@ -27,38 +39,38 @@ public class SteamPlant extends Producer
   @XStreamOmitField
   private double lastOutput;
 
-  public SteamPlant (double adjustmentSpeed, double diviation,
-                     double capacity)
+  public SteamPlant (double adjustmentSpeed, double diviation, double capacity)
   {
     // Maybe change the profile hours
-    super("Steam plant", PowerType.FOSSIL_PRODUCTION,
-          24, capacity);
-    if(adjustmentSpeed <= 0 || diviation <= 0 )
+    super("Steam plant", PowerType.FOSSIL_PRODUCTION, 24, capacity);
+    if (adjustmentSpeed <= 0 || diviation <= 0)
       throw new IllegalArgumentException();
     this.lastOutput = capacity;
     this.adjustmentSpeed = adjustmentSpeed;
     this.diviation = diviation;
     this.co2Emissions = 1.5;
     this.costPerKwh = 0.1;
-    
+
   }
 
   public double getOutput ()
   {
     Curve out = new Curve();
     out.add(0, lastOutput);
-    if(abs(preferredOutput - lastOutput) > 0.01*abs(upperPowerCap)){
+    if (abs(preferredOutput - lastOutput) > 0.01 * abs(upperPowerCap)) {
       double time =
-              (preferredOutput - lastOutput)
-              / (signum(preferredOutput - lastOutput) * adjustmentSpeed);
-      out.add(time/2, (signum(preferredOutput - lastOutput) * adjustmentSpeed)
-              * time / 2 + lastOutput);
+        (preferredOutput - lastOutput)
+                / (signum(preferredOutput - lastOutput) * adjustmentSpeed);
+      out.add(time / 2,
+              (signum(preferredOutput - lastOutput) * adjustmentSpeed) * time
+                      / 2 + lastOutput);
       out.add(time, preferredOutput);
-    }else{
-      out.add(timeslotLengthInMin/2, preferredOutput);
+    }
+    else {
+      out.add(timeslotLengthInMin / 2, preferredOutput);
       out.add(timeslotLengthInMin, preferredOutput);
     }
-    
+
     double outSum = 0.0;
     for (double t = 0.0; t < timeslotLengthInMin; t++) {
       outSum += out.value(t) + seed.nextGaussian() * diviation;
@@ -73,7 +85,8 @@ public class SteamPlant extends Producer
   /**
    * This function is called after de-serialization
    */
-  protected Object readResolve(){
+  protected Object readResolve ()
+  {
     this.lastOutput = this.upperPowerCap;
     this.name = "Steam plant";
     initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
@@ -105,28 +118,30 @@ public class SteamPlant extends Producer
 
   @Override
   protected double
-  getOutput (int timeslotIndex,
-             WeatherForecastPrediction weatherForecastPrediction)
+    getOutput (int timeslotIndex,
+               WeatherForecastPrediction weatherForecastPrediction)
   {
     return getOutput();
   }
 
   /**
-   * @param adjustmentSpeed the adjustmentSpeed to set
+   * @param adjustmentSpeed
+   *          the adjustmentSpeed to set
    */
   public void setAdjustmentSpeed (double adjustmentSpeed)
   {
-    if(adjustmentSpeed <= 0)
+    if (adjustmentSpeed <= 0)
       throw new IllegalArgumentException();
     this.adjustmentSpeed = adjustmentSpeed;
   }
 
   /**
-   * @param diviation the diviation to set
+   * @param diviation
+   *          the diviation to set
    */
   public void setDiviation (double diviation)
   {
-    if(diviation <= 0 )
+    if (diviation <= 0)
       throw new IllegalArgumentException();
     this.diviation = diviation;
   }

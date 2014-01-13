@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.hydro;
 
 import org.powertac.common.enumerations.PowerType;
@@ -25,14 +37,14 @@ public abstract class HydroBase extends Producer
 
   public HydroBase (String name, Curve inputFlow, double minFlow,
                     double maxFlow, Curve turbineEfficiency,
-                    double initialVolume, double initialHeight, double capacity,
-                    double staticLosses)
+                    double initialVolume, double initialHeight,
+                    double capacity, double staticLosses)
   {
     // no dam production put both on run of the river
     super(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, capacity);
-    if(inputFlow == null || minFlow < 0 || maxFlow < minFlow ||
-            turbineEfficiency == null || initialVolume < 0 || initialHeight < 0 ||
-            staticLosses < 0 || staticLosses > 1)
+    if (inputFlow == null || minFlow < 0 || maxFlow < minFlow
+        || turbineEfficiency == null || initialVolume < 0 || initialHeight < 0
+        || staticLosses < 0 || staticLosses > 1)
       throw new IllegalArgumentException();
     this.inputFlow = inputFlow;
     this.minFlow = minFlow;
@@ -50,13 +62,14 @@ public abstract class HydroBase extends Producer
 
     double waterFlow = getFlow(inputFlow.value(day));
 
-    double turbEff = turbineEfficiency.value(waterFlow/maxFlow);
+    double turbEff = turbineEfficiency.value(waterFlow / maxFlow);
 
-    //make the power into kwh
-    double power = -getWaterPower(staticLosses,turbEff, waterFlow, height)
-            * timeslotLengthInMin /(60 * 1000);
+    // make the power into kwh
+    double power =
+      -getWaterPower(staticLosses, turbEff, waterFlow, height)
+              * timeslotLengthInMin / (60 * 1000);
 
-    updateVolume(inputFlow.value(day),waterFlow);
+    updateVolume(inputFlow.value(day), waterFlow);
     updateHeigth();
     if (power > 0)
       throw new IllegalStateException("Positive power");
@@ -130,61 +143,67 @@ public abstract class HydroBase extends Producer
   }
 
   /**
-   * @param inputFlow the inputFlow to set
+   * @param inputFlow
+   *          the inputFlow to set
    */
   public void setInputFlow (Curve inputFlow)
   {
-    if(inputFlow == null)
+    if (inputFlow == null)
       throw new IllegalArgumentException();
     this.inputFlow = inputFlow;
   }
 
   /**
-   * @param minFlow the minFlow to set
+   * @param minFlow
+   *          the minFlow to set
    */
   public void setMinFlow (double minFlow)
   {
-    if(minFlow < 0 || minFlow >= maxFlow)
+    if (minFlow < 0 || minFlow >= maxFlow)
       throw new IllegalArgumentException();
     this.minFlow = minFlow;
   }
 
   /**
-   * @param maxFlow the maxFlow to set
+   * @param maxFlow
+   *          the maxFlow to set
    */
   public void setMaxFlow (double maxFlow)
   {
-    if(maxFlow < 0 || maxFlow <= minFlow)
+    if (maxFlow < 0 || maxFlow <= minFlow)
       throw new IllegalArgumentException();
     this.maxFlow = maxFlow;
   }
 
   /**
-   * @param turbineEfficiency the turbineEfficiency to set
+   * @param turbineEfficiency
+   *          the turbineEfficiency to set
    */
   public void setTurbineEfficiency (Curve turbineEfficiency)
   {
-    if(turbineEfficiency == null)
+    if (turbineEfficiency == null)
       throw new IllegalArgumentException();
     this.turbineEfficiency = turbineEfficiency;
   }
 
   /**
-   * @param volume the volume to set
+   * @param volume
+   *          the volume to set
    */
   public void setVolume (double volume)
   {
-    if(volume < 0)
+    if (volume < 0)
       throw new IllegalArgumentException();
     this.volume = volume;
   }
 
   /**
-   * @param height the height to set
+   * @param height
+   *          the height to set
    */
   public void setHeight (double height)
   {
-    if(height < 0)
+    if (height < 0)
       throw new IllegalArgumentException();
     this.height = height;
   }

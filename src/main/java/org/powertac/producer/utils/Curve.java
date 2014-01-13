@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.utils;
 
 import java.util.Iterator;
@@ -76,7 +88,7 @@ public class Curve
    */
   public void add (double x, double y)
   {
-    if(xy.size() != 0 && x < lastX)
+    if (xy.size() != 0 && x < lastX)
       throw new IllegalArgumentException("Input arguments in order");
     xy.put(x, y);
     if (firstX == -1) {
@@ -217,7 +229,7 @@ public class Curve
     }
     return newCurve;
   }
-  
+
   /**
    * @return the canBeNegative
    */

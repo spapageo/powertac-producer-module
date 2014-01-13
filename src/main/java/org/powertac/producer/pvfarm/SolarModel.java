@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.pvfarm;
 
 import static java.lang.Math.*;
@@ -71,7 +83,7 @@ final class SolarModel
    */
   protected static double getSunDivergance (int day)
   {
-    //assert (day >= 1 && day <= 366);
+    // assert (day >= 1 && day <= 366);
     return 0.3948 - 23.2559 * cos(toRadians(day * 360.0 / 365.0 + 9.1))
            - 0.3915 * cos(toRadians(2 * day * 360.0 / 365.0 + 5.4)) - 0.1764
            * cos(toRadians(3 * day * 360.0 / 365.0 + 26.0));
@@ -92,9 +104,9 @@ final class SolarModel
                                                     double pressure,
                                                     double temperature)
   {
-    //assert (altitudeAngle >= 0 && altitudeAngle <= 90);
-    //assert (pressure >= 0);
-    //assert (temperature >= 0);
+    // assert (altitudeAngle >= 0 && altitudeAngle <= 90);
+    // assert (pressure >= 0);
+    // assert (temperature >= 0);
 
     // Since we take inputs in SI units and the equation requires pressure
     // in mbar we have to convert the value
@@ -126,9 +138,9 @@ final class SolarModel
   protected static double getSunAltitudeAngle (double solarTime,
                                                double panelLatitude, int day)
   {
-    //assert (day >= 1 && day <= 366);
-    //assert (panelLatitude >= -90 && panelLatitude <= 90);
-    //assert (solarTime >= 0 && solarTime < 24);
+    // assert (day >= 1 && day <= 366);
+    // assert (panelLatitude >= -90 && panelLatitude <= 90);
+    // assert (solarTime >= 0 && solarTime < 24);
 
     return toDegrees(asin(cos(toRadians((12 - solarTime) * 15))
                           * cos(toRadians(panelLatitude))
@@ -156,9 +168,9 @@ final class SolarModel
                                              double panelAltitude)
   {
     // assert(sunAltitude >= 0 && sunAltitude <= 90);
-    //assert (sunAzimuth >= 0 && sunAzimuth <= 360);
-    //assert (panelAzimuth >= 0 && panelAzimuth <= 360);
-    //assert (panelAltitude >= 0 && panelAltitude <= 90);
+    // assert (sunAzimuth >= 0 && sunAzimuth <= 360);
+    // assert (panelAzimuth >= 0 && panelAzimuth <= 360);
+    // assert (panelAltitude >= 0 && panelAltitude <= 90);
 
     return toDegrees(acos(cos(toRadians(sunAltitude))
                           * sin(toRadians(panelAltitude))
@@ -181,9 +193,9 @@ final class SolarModel
   protected static double getSolarTime (double longitude, int timeZone,
                                         long localTime)
   {
-    //assert (longitude >= -180 && longitude <= 180);
-    //assert (abs(timeZone) <= 10);
-    //assert (localTime > 0);
+    // assert (longitude >= -180 && longitude <= 180);
+    // assert (abs(timeZone) <= 10);
+    // assert (localTime > 0);
 
     String tz;
     if (timeZone >= 0) {

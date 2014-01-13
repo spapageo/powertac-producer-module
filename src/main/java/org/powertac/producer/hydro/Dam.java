@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.hydro;
 
 import org.powertac.common.IdGenerator;
@@ -26,7 +38,7 @@ public class Dam extends HydroBase
 
   public Dam (Curve inputFlow, double minFlow, double maxFlow,
               Curve turbineEfficiency, Curve volumeHeigth,
-              double initialVolume, double capacity,double staticLosses)
+              double initialVolume, double capacity, double staticLosses)
   {
     super("Dam", inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
           volumeHeigth.value(initialVolume), capacity, staticLosses);
@@ -41,9 +53,10 @@ public class Dam extends HydroBase
     // calculate inverse curve output function for unit height
     for (double flow = minFlow; flow <= maxFlow; flow +=
       (maxFlow - minFlow) / 10) {
-      double pow = getWaterPower(this.staticLosses,
-                                 this.turbineEfficiency.value(flow/maxFlow),
-                                 flow, 1)*timeslotLengthInMin/(1000*60);
+      double pow =
+        getWaterPower(this.staticLosses,
+                      this.turbineEfficiency.value(flow / maxFlow), flow, 1)
+                * timeslotLengthInMin / (1000 * 60);
       c.add(flow, pow);
     }
 
@@ -51,15 +64,15 @@ public class Dam extends HydroBase
   }
 
   @Override
-  protected void updateVolume (double avarageinputFlow,double computedFlow)
+  protected void updateVolume (double avarageinputFlow, double computedFlow)
   {
-    this.volume += ( avarageinputFlow - computedFlow) * timeslotLengthInMin * 60;
+    this.volume += (avarageinputFlow - computedFlow) * timeslotLengthInMin * 60;
   }
 
   @Override
   protected double getFlow (double avarageInputFlow)
   {
-    if(height != 0)
+    if (height != 0)
       return invCurveOut.value(-preferredOutput / height);
     else
       return avarageInputFlow;
@@ -89,7 +102,8 @@ public class Dam extends HydroBase
   /**
    * This function is called after de-serialization
    */
-  protected Object readResolve(){
+  protected Object readResolve ()
+  {
     this.name = "Dam";
     initialize(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, upperPowerCap,
                IdGenerator.createId());
@@ -114,11 +128,12 @@ public class Dam extends HydroBase
   }
 
   /**
-   * @param volumeHeight the volumeHeight to set
+   * @param volumeHeight
+   *          the volumeHeight to set
    */
   public void setVolumeHeight (Curve volumeHeight)
   {
-    if(volumeHeight == null)
+    if (volumeHeight == null)
       throw new IllegalArgumentException();
     this.volumeHeight = volumeHeight;
   }

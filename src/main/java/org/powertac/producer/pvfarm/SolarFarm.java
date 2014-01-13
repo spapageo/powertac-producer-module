@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.pvfarm;
 
 import java.util.ArrayList;
@@ -46,7 +58,7 @@ public class SolarFarm extends Producer
    */
   public void addPanel (PvPanel panel)
   {
-    if(panel == null)
+    if (panel == null)
       return;
     panelList.add(panel);
     upperPowerCap += panel.getCapacity();
@@ -68,15 +80,15 @@ public class SolarFarm extends Producer
       timeslotRepo.getTimeForIndex(weatherReport.getTimeslotIndex())
               .getMillis();
     TimeZone timezone =
-      timeslotRepo.getTimeForIndex(weatherReport.getTimeslotIndex())
-              .getZone().toTimeZone();
+      timeslotRepo.getTimeForIndex(weatherReport.getTimeslotIndex()).getZone()
+              .toTimeZone();
     for (PvPanel panel: panelList) {
       powerSum +=
         panel.getOutput(systemTime, timezone, weatherReport.getCloudCover(),
                         weatherReport.getTemperature(),
                         weatherReport.getWindSpeed());
     }
-    if(Double.isInfinite(powerSum) || Double.isNaN(powerSum))
+    if (Double.isInfinite(powerSum) || Double.isNaN(powerSum))
       throw new IllegalStateException("Power produced isn't a number");
     return powerSum;
   }
@@ -93,8 +105,7 @@ public class SolarFarm extends Producer
                WeatherForecastPrediction weatherForecastPrediction)
   {
     double powerSum = 0;
-    long systemTime =
-      timeslotRepo.getTimeForIndex(timeslotIndex).getMillis();
+    long systemTime = timeslotRepo.getTimeForIndex(timeslotIndex).getMillis();
     TimeZone timezone =
       timeslotRepo.getTimeForIndex(timeslotIndex).getZone().toTimeZone();
     for (PvPanel panel: panelList) {
@@ -115,7 +126,7 @@ public class SolarFarm extends Producer
     this.name = "Solar farm";
     initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
                IdGenerator.createId());
-    for(PvPanel panel : panelList){
+    for (PvPanel panel: panelList) {
       panel.setTimeslotLengthInMin(timeslotLengthInMin);
     }
     return this;

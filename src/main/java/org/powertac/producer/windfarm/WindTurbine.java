@@ -1,6 +1,18 @@
-/**
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
  * 
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer.windfarm;
 
 import org.powertac.common.IdGenerator;
@@ -62,11 +74,10 @@ public class WindTurbine
 
   public double getPowerOutput (double temperature, double avrHourlyWindSpeed)
   {
-    if(rs == null)
-      rs = new RandomSeed("Wind turbine" + IdGenerator.createId(), 0,
-              "Simulation");
+    if (rs == null)
+      rs =
+        new RandomSeed("Wind turbine" + IdGenerator.createId(), 0, "Simulation");
 
-    
     double sumPowerOutput = 0;
 
     // Get the wind speed at the height of the turbine hub
@@ -74,19 +85,19 @@ public class WindTurbine
     double ua =
       calculateUasterisk(avrHourlyWindSpeed, refAltitude, f, surfaceRoughness,
                          kappa);
-    //ua can't be negative since it represents, wind speed 
-    if(ua < 0)
+    // ua can't be negative since it represents, wind speed
+    if (ua < 0)
       ua = 0;
     double correctedHourlySpeed =
       calculateWindAtAltitude(hubHeigth, surfaceRoughness, ua, f, kappa);
-    
+
     double std;
-    
-    if(correctedHourlySpeed > 1)
+
+    if (correctedHourlySpeed > 1)
       std = calculateStd(f, ua, hubHeigth, surfaceRoughness);
     else
       std = 0.1 * correctedHourlySpeed;
-    
+
     for (int i = 0; i < TimeslotLengthInMin; i++) {
       sumPowerOutput +=
         calculateAirDensity(temperature, hubHeigth)
@@ -250,7 +261,8 @@ public class WindTurbine
   }
 
   /**
-   * @param rs the rs to set
+   * @param rs
+   *          the rs to set
    */
   public void setRs (RandomSeed rs)
   {
@@ -258,7 +270,8 @@ public class WindTurbine
   }
 
   /**
-   * @param latitude the latitude to set
+   * @param latitude
+   *          the latitude to set
    */
   public void setLatitude (double latitude)
   {
@@ -266,7 +279,8 @@ public class WindTurbine
   }
 
   /**
-   * @param surfaceRoughness the surfaceRoughness to set
+   * @param surfaceRoughness
+   *          the surfaceRoughness to set
    */
   public void setSurfaceRoughness (double surfaceRoughness)
   {
@@ -274,7 +288,8 @@ public class WindTurbine
   }
 
   /**
-   * @param ratedOutput the ratedOutput to set
+   * @param ratedOutput
+   *          the ratedOutput to set
    */
   public void setRatedOutput (double ratedOutput)
   {
@@ -282,7 +297,8 @@ public class WindTurbine
   }
 
   /**
-   * @param hubHeigth the hubHeigth to set
+   * @param hubHeigth
+   *          the hubHeigth to set
    */
   public void setHubHeigth (double hubHeigth)
   {
@@ -290,7 +306,8 @@ public class WindTurbine
   }
 
   /**
-   * @param powerCurve the powerCurve to set
+   * @param powerCurve
+   *          the powerCurve to set
    */
   public void setPowerCurve (Curve powerCurve)
   {
@@ -306,7 +323,8 @@ public class WindTurbine
   }
 
   /**
-   * @param timeslotLengthInMin the timeslotLengthInMin to set
+   * @param timeslotLengthInMin
+   *          the timeslotLengthInMin to set
    */
   public void setTimeslotLengthInMin (int timeslotLengthInMin)
   {

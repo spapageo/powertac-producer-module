@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright 2014 Spyridon Papageorgiou
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package org.powertac.producer;
 
 import static org.junit.Assert.*;
@@ -76,7 +91,7 @@ public class ProducerServiceTest
 
   @Autowired
   private WeatherReportRepo weatherReportRepo;
-  
+
   @Autowired
   private WeatherForecastRepo weatherForecastRepo;
 
@@ -85,10 +100,10 @@ public class ProducerServiceTest
 
   @Autowired
   private RandomSeedRepo randomSeedRepo;
-  
+
   @Autowired
   private ProducerService producerService;
-  
+
   private Configurator config;
   private Instant exp;
   private Broker broker1;
@@ -122,13 +137,14 @@ public class ProducerServiceTest
     // DateTimeZone.UTC).toInstant();
     now = comp.getSimulationBaseTime();
     timeService.setCurrentTime(now);
-    timeService.setClockParameters(now.toInstant().getMillis(), 720l, 60*60*1000);
+    timeService.setClockParameters(now.toInstant().getMillis(), 720l,
+                                   60 * 60 * 1000);
     exp = now.plus(TimeService.WEEK * 10);
 
     defaultTariffSpec =
       new TariffSpecification(broker1, PowerType.PRODUCTION)
               .withExpiration(exp).addRate(new Rate().withValue(0.5));
-    
+
     defaultTariff = new Tariff(defaultTariffSpec);
     defaultTariff.init();
     defaultTariff.setState(Tariff.State.OFFERED);
@@ -136,13 +152,13 @@ public class ProducerServiceTest
     tariffRepo.setDefaultTariff(defaultTariffSpec);
 
     when(mockTariffMarket.getDefaultTariff(PowerType.FOSSIL_PRODUCTION))
-         .thenReturn(defaultTariff);
+            .thenReturn(defaultTariff);
     when(mockTariffMarket.getDefaultTariff(PowerType.RUN_OF_RIVER_PRODUCTION))
-         .thenReturn(defaultTariff);
+            .thenReturn(defaultTariff);
     when(mockTariffMarket.getDefaultTariff(PowerType.SOLAR_PRODUCTION))
-         .thenReturn(defaultTariff);
+            .thenReturn(defaultTariff);
     when(mockTariffMarket.getDefaultTariff(PowerType.WIND_PRODUCTION))
-         .thenReturn(defaultTariff);
+            .thenReturn(defaultTariff);
 
     accountingArgs = new ArrayList<Object[]>();
 
@@ -172,14 +188,13 @@ public class ProducerServiceTest
       }
     }).when(mockServerProperties).configureMe(anyObject());
 
-    
     TreeMap<String, String> map = new TreeMap<String, String>();
     map.put("common.competition.expectedTimeslotCount", "1440");
     Configuration mapConfig = new MapConfiguration(map);
     config.setConfiguration(mapConfig);
     config.configureSingleton(comp);
   }
-  
+
   @After
   public void tearDown ()
   {
@@ -204,7 +219,7 @@ public class ProducerServiceTest
     accountingArgs = null;
     producerService = null;
   }
-  
+
   @Test
   public void testActivate ()
   {
@@ -213,7 +228,7 @@ public class ProducerServiceTest
     l.add(prod);
     producerService.setProducerList(l);
     producerService.activate(null, 0);
-    
+
     verify(prod).step();
   }
 
@@ -222,46 +237,48 @@ public class ProducerServiceTest
   {
     List<String> inits = new ArrayList<String>();
     inits.add("DefaultBroker");
-    
+
     TariffSubscription sub = mock(TariffSubscription.class);
-    
+
     List<TariffSubscription> l = new ArrayList<>();
     l.add(sub);
-        
-    
-    when(mockTariffSubscriptionRepo.
-         findActiveSubscriptionsForCustomer(any(CustomerInfo.class)))
-    .thenReturn(l);
+
+    when(
+         mockTariffSubscriptionRepo
+                 .findActiveSubscriptionsForCustomer(any(CustomerInfo.class)))
+            .thenReturn(l);
 
     producerService.initialize(comp, inits);
     assertTrue(producerService.getProducerFileFolder().contains("conf"));
     assertTrue(producerService.getProducerList().size() > 0);
     assertTrue(producerService.getProducerList().get(0).currentSubscription != null);
   }
-  
+
   @Test
-  public void testConfigure(){
+  public void testConfigure ()
+  {
     List<String> inits = new ArrayList<String>();
     inits.add("DefaultBroker");
-    
+
     TariffSubscription sub = mock(TariffSubscription.class);
-    
+
     List<TariffSubscription> l = new ArrayList<>();
-    
+
     l.add(sub);
-    
+
     Configurator conf = new Configurator();
-    
+
     TreeMap<String, String> map = new TreeMap<String, String>();
     map.put("producer.producerService.producerFileFolder", "bla");
     Configuration mapConfig = new MapConfiguration(map);
     conf.setConfiguration(mapConfig);
     conf.configureSingleton(producerService);
     assertTrue(producerService.getProducerFileFolder() != null);
-    
-    when(mockTariffSubscriptionRepo.
-         findActiveSubscriptionsForCustomer(any(CustomerInfo.class)))
-    .thenReturn(l);
+
+    when(
+         mockTariffSubscriptionRepo
+                 .findActiveSubscriptionsForCustomer(any(CustomerInfo.class)))
+            .thenReturn(l);
   }
 
   @Test
