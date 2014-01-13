@@ -105,14 +105,19 @@ public class WindFarm extends Producer
       sumOutput += wt.getPowerOutput(temperature, windSpeed);
     }
     if (Double.isInfinite(sumOutput) || Double.isNaN(sumOutput))
-      throw new IllegalStateException("Power produced isn't a number.");
+    {
+      String arguments = String.format("Wind: %f Temperature: %f%n",
+                                       windSpeed,temperature);
+      throw new IllegalStateException("Power produced isn't a number. "
+                                       + arguments);
+    }
     return sumOutput;
   }
 
   @Override
   protected double getOutput (WeatherReport weatherReport)
   {
-    return getPowerOutput(weatherReport.getTemperature(),
+    return getPowerOutput(weatherReport.getTemperature() + 273.15,
                           weatherReport.getWindSpeed());
   }
 
@@ -121,7 +126,7 @@ public class WindFarm extends Producer
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction)
   {
-    return getPowerOutput(weatherForecastPrediction.getTemperature(),
+    return getPowerOutput(weatherForecastPrediction.getTemperature() + 273.15,
                           weatherForecastPrediction.getWindSpeed());
   }
 

@@ -85,7 +85,8 @@ public class SolarFarm extends Producer
     for (PvPanel panel: panelList) {
       powerSum +=
         panel.getOutput(systemTime, timezone, weatherReport.getCloudCover(),
-                        weatherReport.getTemperature(),
+                        // FIX for celcius to kelvin
+                        weatherReport.getTemperature() + 273.15,
                         weatherReport.getWindSpeed());
     }
     if (Double.isInfinite(powerSum) || Double.isNaN(powerSum))
@@ -112,7 +113,8 @@ public class SolarFarm extends Producer
       powerSum +=
         panel.getOutput(systemTime, timezone,
                         weatherForecastPrediction.getCloudCover(),
-                        weatherForecastPrediction.getTemperature(),
+                        // FIX for celcius to kelvin
+                        weatherForecastPrediction.getTemperature() + 273.15,
                         weatherForecastPrediction.getWindSpeed());
     }
     return powerSum;
