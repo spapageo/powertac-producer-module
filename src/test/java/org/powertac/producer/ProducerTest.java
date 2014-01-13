@@ -475,7 +475,7 @@ public class ProducerTest
       new WeatherForecast(timeslotRepo.currentSerialNumber(), predictions);
     weatherForecastRepo.add(forecast);
 
-    Rate r = new Rate().withTierThreshold(-12 * 500000);
+    Rate r = new Rate().withTierThreshold(-12 * 500000).withValue(-80);
 
     defaultTariff.getTariffSpecification().addRate(r);
 
@@ -492,6 +492,7 @@ public class ProducerTest
     assertTrue(out.length == 24);
 
     assertTrue(Math.abs(pref) < Math.abs(plant.upperPowerCap));
+    assertEquals(-250000, pref,1000);
 
   }
 

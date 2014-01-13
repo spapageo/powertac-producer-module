@@ -381,10 +381,10 @@ public abstract class Producer
       double savePreferredOutput = parent.preferredOutput;
 
       // CARE Careful on the signs
-      double sum = 0;
+      
       for (parent.preferredOutput = 0; parent.preferredOutput >= parent.upperPowerCap; parent.preferredOutput +=
         step * parent.upperPowerCap) {
-
+        double sum = 0;
         // Here we create the usage vector
         double[] out = new double[predictions.size()];
         for (int i = 0; i < out.length; i++) {
