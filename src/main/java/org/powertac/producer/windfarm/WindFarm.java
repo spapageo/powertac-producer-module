@@ -124,7 +124,8 @@ public class WindFarm extends Producer
   @Override
   protected double
     getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction)
+               WeatherForecastPrediction weatherForecastPrediction,
+               double previousOutput)
   {
     return getPowerOutput(weatherForecastPrediction.getTemperature() + 273.15,
                           weatherForecastPrediction.getWindSpeed());

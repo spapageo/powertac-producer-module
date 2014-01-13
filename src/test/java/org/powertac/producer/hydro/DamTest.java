@@ -17,6 +17,7 @@ package org.powertac.producer.hydro;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -150,6 +151,7 @@ public class DamTest
     Dam dam =
       new Dam(inputFlow, 100, 600, efficiency, volume, 600000000.0, -500000,
               0.95);
+    new File("data/").mkdir();
     FileWriter fw = new FileWriter("data/dam.xml");
     XStream xstream = new XStream();
     xstream.autodetectAnnotations(true);

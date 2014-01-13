@@ -228,7 +228,8 @@ public abstract class Producer
 
   abstract protected double
     getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction);
+               WeatherForecastPrediction weatherForecastPrediction,
+               double previousOutput);
 
   public void step ()
   {
@@ -387,9 +388,11 @@ public abstract class Producer
         double sum = 0;
         // Here we create the usage vector
         double[] out = new double[predictions.size()];
+        double lastOut = 0;
         for (int i = 0; i < out.length; i++) {
           int timeslot = slotIter.next();
-          double usage = parent.getOutput(timeslot, predictions.get(timeslot));
+          double usage = parent.getOutput(timeslot, predictions.get(timeslot),
+                                          lastOut);
           double charge =
             tariff.getUsageCharge(parent.timeslotRepo.getTimeForIndex(timeslot),
                                   usage, sum);
@@ -401,6 +404,7 @@ public abstract class Producer
           else {
             out[i] = 0;
           }
+          lastOut = out[i];
         }
         // calculate the money
         double money =

@@ -103,7 +103,8 @@ public class SolarFarm extends Producer
   @Override
   protected double
     getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction)
+               WeatherForecastPrediction weatherForecastPrediction,
+               double previousOutput)
   {
     double powerSum = 0;
     long systemTime = timeslotRepo.getTimeForIndex(timeslotIndex).getMillis();

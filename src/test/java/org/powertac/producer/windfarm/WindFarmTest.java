@@ -17,6 +17,7 @@ package org.powertac.producer.windfarm;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -166,7 +167,7 @@ public class WindFarmTest
     wf.addWindTurbine(wt);
     wf.addWindTurbine(wt);
     wf.addWindTurbine(wt);
-
+    new File("data/").mkdir();
     FileWriter fw = new FileWriter("data/wind-farm.xml");
     XStream xstream = new XStream();
     xstream.autodetectAnnotations(true);

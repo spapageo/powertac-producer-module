@@ -38,7 +38,7 @@ public class SteamPlant extends Producer
   private double diviation;
   @XStreamOmitField
   private double lastOutput;
-
+  
   public SteamPlant (double adjustmentSpeed, double diviation, double capacity)
   {
     // Maybe change the profile hours
@@ -119,9 +119,14 @@ public class SteamPlant extends Producer
   @Override
   protected double
     getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction)
+               WeatherForecastPrediction weatherForecastPrediction,
+               double previousOutput)
   {
-    return getOutput();
+    double savedOutput = this.lastOutput;
+    this.lastOutput = previousOutput;
+    double power = getOutput();
+    this.lastOutput = savedOutput;
+    return power;
   }
 
   /**

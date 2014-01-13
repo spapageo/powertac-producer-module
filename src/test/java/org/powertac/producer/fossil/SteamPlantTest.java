@@ -18,6 +18,7 @@ package org.powertac.producer.fossil;
 import static java.lang.Math.signum;
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -76,7 +77,7 @@ public class SteamPlantTest
     output.add(time, 200000);
     output.add(time + 10, 200000);
     Random r = new Random();
-
+    new File("data/").mkdir();
     PrintWriter fw = new PrintWriter("data/dataFossilOutput.txt");
     for (int i = 0; i < 60; i++) {
       fw.printf("%d,%f%n", i, output.value(i - 5) + r.nextGaussian() * variance);

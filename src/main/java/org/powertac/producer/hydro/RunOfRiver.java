@@ -68,7 +68,8 @@ public class RunOfRiver extends HydroBase
   @Override
   protected double
     getOutput (int timeslotIndex,
-               WeatherForecastPrediction weatherForecastPrediction)
+               WeatherForecastPrediction weatherForecastPrediction,
+               double previousOutput)
   {
     return getOutput(this.timeslotRepo.getTimeForIndex(timeslotIndex)
             .toDateTime().getDayOfYear());

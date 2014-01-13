@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.powertac.producer.hydro;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -133,6 +134,7 @@ public class RunOfRiverTest
     Competition.newInstance("run of river");
     RunOfRiver river =
       new RunOfRiver(inputFlow, 20, 500, efficiency, 1000000, 80, 0.95, -300000);
+    new File("data/").mkdir();
     FileWriter fw = new FileWriter("data/runoftheriver.xml");
     XStream xstream = new XStream();
     xstream.autodetectAnnotations(true);

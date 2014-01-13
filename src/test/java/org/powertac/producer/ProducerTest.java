@@ -441,7 +441,7 @@ public class ProducerTest
   @Test
   public void testCalculateOutputTiered ()
   {
-    // TODO
+    
     SteamPlant plant = new SteamPlant(10000, 2000, -500000);
     List<WeatherForecastPrediction> predictions = new ArrayList<>();
     predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));

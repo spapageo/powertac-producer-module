@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.powertac.producer.pvfarm;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -44,6 +45,7 @@ public class SolarFarmTest
     for (int i = 0; i < 100; i++)
       farm.addPanel(panel);
 
+    new File("data/").mkdir();
     FileWriter fw = new FileWriter("data/solar-farm.xml");
     XStream xstream = new XStream();
     xstream.autodetectAnnotations(true);
