@@ -1,0 +1,40 @@
+Producer Power TAC module
+=========================
+
+A module for the powertac simulation server that has models for:
+- Dams
+- Run of the river plants
+- Steam plants
+- Solar farms
+- Wind farms
+
+Examples of the xml format of the producers are given at src/main/resources/conf
+
+To add your custom producers:
+- modify the existing files or create new ones
+- make sure the filename contains "steam" || "dam" || "river" || "solar" || "wind"
+- put all your files in folder of your choice
+- add the following key=value to the server properties before running the server
+  producer.producerService.producerFileFolder=your-folder-with-the-custom-files
+  
+
+How to set up this package as a Power Tac module
+================================================
+
+1) Add it as a dependency at /server-main/pom.xml by adding at the
+   dependencies section
+   
+    <dependency>
+      <groupId>org.powertac</groupId>
+      <artifactId>producer</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
+2) Add it as a dependency at /powertac-server/pom.xml by adding at the
+   dependencies section
+
+    <dependency>
+      <groupId>org.powertac</groupId>
+      <artifactId>producer</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
