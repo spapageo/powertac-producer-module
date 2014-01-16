@@ -53,7 +53,7 @@ public class Curve
   private double lastX = -1;
 
   // The x-y axis of the data
-  protected LinkedHashMap<Double, Double> xy = new LinkedHashMap<>();
+  protected LinkedHashMap<Double, Double> xy = new LinkedHashMap<Double, Double>();
 
   // Need to rebuild the spline
   boolean needRebuild = true;

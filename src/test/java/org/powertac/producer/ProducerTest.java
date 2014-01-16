@@ -313,7 +313,7 @@ public class ProducerTest
         assertTrue((Tariff) invocation.getArguments()[0] == defaultTariff);
         assertTrue((CustomerInfo) invocation.getArguments()[1] == plant
                 .getCustomerInfo());
-        assertTrue((int) invocation.getArguments()[2] == 1);
+        assertTrue((Integer) invocation.getArguments()[2] == 1);
         TariffSubscription sub =
           new TariffSubscription(plant.getCustomerInfo(), defaultTariff);
         sub.subscribe(1);
@@ -370,7 +370,8 @@ public class ProducerTest
   {
     // TODO
     SteamPlant plant = new SteamPlant(10000, 2000, -500000);
-    List<WeatherForecastPrediction> predictions = new ArrayList<>();
+    List<WeatherForecastPrediction> predictions = 
+            new ArrayList<WeatherForecastPrediction>();
     predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(2, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(3, 22, 5, 0.5, 0));
@@ -443,7 +444,8 @@ public class ProducerTest
   {
     
     SteamPlant plant = new SteamPlant(10000, 2000, -500000);
-    List<WeatherForecastPrediction> predictions = new ArrayList<>();
+    List<WeatherForecastPrediction> predictions = 
+            new ArrayList<WeatherForecastPrediction>();
     predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(2, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(3, 22, 5, 0.5, 0));

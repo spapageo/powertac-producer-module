@@ -375,7 +375,7 @@ public abstract class Producer
     {
       // try and collect forecasts for the requested number of hours
       SortedMap<Integer, WeatherForecastPrediction> predictions =
-        new TreeMap<>();
+        new TreeMap<Integer, WeatherForecastPrediction>();
 
       WeatherForecast forecast =
         parent.weatherForecastRepo.currentWeatherForecast();

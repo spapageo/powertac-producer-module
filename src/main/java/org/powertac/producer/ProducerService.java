@@ -88,7 +88,7 @@ implements NewTariffListener, InitializationService
                                              "/conf/steam-plant.xml",
                                              "/conf/wind-farm.xml"};
 
-  private List<Producer> producerList = new ArrayList<>();
+  private List<Producer> producerList = new ArrayList<Producer>();
 
   public ProducerService ()
   {
@@ -141,7 +141,7 @@ implements NewTariffListener, InitializationService
 
   protected List<Producer> loadProducers () throws IOException
   {
-    List<Producer> producers = new ArrayList<>();
+    List<Producer> producers = new ArrayList<Producer>();
 
     FileFilter filter = new FileFilter() {
       @Override

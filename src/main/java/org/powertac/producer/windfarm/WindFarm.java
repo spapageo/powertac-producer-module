@@ -44,7 +44,7 @@ public class WindFarm extends Producer
 
   // The list of turbines in this farm
   @XStreamImplicit
-  private List<WindTurbine> turbines = new ArrayList<>();
+  private List<WindTurbine> turbines = new ArrayList<WindTurbine>();
 
   /**
    * Adds the given wind turbine to the farm

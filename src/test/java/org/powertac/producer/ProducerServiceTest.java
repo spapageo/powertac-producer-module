@@ -223,7 +223,7 @@ public class ProducerServiceTest
   @Test
   public void testActivate ()
   {
-    List<Producer> l = new ArrayList<>();
+    List<Producer> l = new ArrayList<Producer>();
     Producer prod = mock(Producer.class);
     l.add(prod);
     producerService.setProducerList(l);
@@ -240,7 +240,7 @@ public class ProducerServiceTest
 
     TariffSubscription sub = mock(TariffSubscription.class);
 
-    List<TariffSubscription> l = new ArrayList<>();
+    List<TariffSubscription> l = new ArrayList<TariffSubscription>();
     l.add(sub);
 
     when(
@@ -262,7 +262,7 @@ public class ProducerServiceTest
 
     TariffSubscription sub = mock(TariffSubscription.class);
 
-    List<TariffSubscription> l = new ArrayList<>();
+    List<TariffSubscription> l = new ArrayList<TariffSubscription>();
 
     l.add(sub);
 
@@ -284,7 +284,7 @@ public class ProducerServiceTest
   @Test
   public void testPublishNewTariffs ()
   {
-    List<Producer> l = new ArrayList<>();
+    List<Producer> l = new ArrayList<Producer>();
     Producer prod = mock(Producer.class);
     l.add(prod);
     producerService.setProducerList(l);

@@ -37,7 +37,7 @@ public class SolarFarm extends Producer
 {
 
   @XStreamImplicit
-  List<PvPanel> panelList = new ArrayList<>();
+  List<PvPanel> panelList = new ArrayList<PvPanel>();
 
   /**
    * @param name
