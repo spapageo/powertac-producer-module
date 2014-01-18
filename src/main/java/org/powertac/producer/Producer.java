@@ -50,7 +50,8 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
 /**
  * This is the base class that all the producers extend and implement it's
  * abstract methods. It is based on the AbstractCustomer put doesn't inherit
- * from it to make serialization easier 
+ * from it to make serialization easier
+ * 
  * @author Spyros Papageorgiou
  * 
  */
@@ -60,7 +61,7 @@ public abstract class Producer
   static protected Logger log = Logger.getLogger(Producer.class.getName());
 
   // Percentage increment for the calculation of the preferred output
-  private static final double step = 0.1;
+
   private static final double TOU_FACTOR = 0.05;
   private static final double TIERED_RATE_FACTOR = 0.1;
   private static final double VARIABLE_PRICING_FACTOR = 0.7;
@@ -70,6 +71,17 @@ public abstract class Producer
   private static final double RATIONALITY_FACTOR = 0.9;
   private static final int TARIFF_COUNT = 5;
   private static final double BROKER_SWITCH_FACTOR = 0.02;
+  private static final double SUPERSEEDING_MULT_FACTOR = 5;
+
+  public static final double STEP = 0.1;
+  public static final int MILLISECONDS_IN_SECOND = 1000;
+  public static final int SECONDS_IN_MINUTE = 60;
+  public static final int MINUTES_IN_HOUR = 60;
+  public static final int HOURS_IN_DAY = 24;
+  public static final double DAYS_IN_A_YEAR = 365.0;
+  public static final double WATT_IN_KILOWATT = 1000;
+
+  
 
   @XStreamOmitField
   protected WeatherReportRepo weatherReportRepo;
@@ -99,7 +111,6 @@ public abstract class Producer
   @XStreamOmitField
   protected ProducerAccessor producerAccessor;
 
-  
   // The preferred plant output. It is up to the plant if it can change its
   // output to much this value. The units are kwh. Must be negative.
   @XStreamOmitField
@@ -116,16 +127,16 @@ public abstract class Producer
   @XStreamOmitField
   protected int timeslotLengthInMin;
 
-  //The plant co2 emissions per kwh. Must be positive.
+  // The plant co2 emissions per kwh. Must be positive.
   @XStreamAsAttribute
   protected double co2Emissions = 0;
-  //The cost per kwh. Must be a positive number
+  // The cost per kwh. Must be a positive number
   @XStreamAsAttribute
   protected double costPerKwh = 0;
-  //Hourly maintenance cost. Must be a positive number
+  // Hourly maintenance cost. Must be a positive number
   @XStreamAsAttribute
   protected double hourlyMaintenanceCost = 0;
-  //The upper plant capacity. Must be negative
+  // The upper plant capacity. Must be negative
   @XStreamAsAttribute
   protected double upperPowerCap;
 
@@ -151,6 +162,21 @@ public abstract class Producer
     initialize(name, powerType, profileHours, capacity, IdGenerator.createId());
   }
 
+  /**
+   * This function if used to initialize all the external spring dependencies,
+   * the {@link TariffEvaluator}, the {@link TariffEvaluationHelper}
+   * 
+   * @param producerName
+   *          the name of the producer
+   * @param powerType
+   *          the producer power type
+   * @param profileHours
+   *          the length of the output profile that should be generated
+   * @param capacity
+   *          upper power capacity < 0
+   * @param id
+   *          randomized object id
+   */
   protected void initialize (String producerName, PowerType powerType,
                              int profileHours, double capacity, long id)
   {
@@ -222,16 +248,19 @@ public abstract class Producer
 
     if (currentSubscription != null && report != null) {
       double power = getOutput(report);
-      double charge = currentSubscription
-              .getTariff()
-              .getUsageCharge(power, currentSubscription.getTotalUsage(), false);
-      if ( charge > costPerKwh*power +
-              hourlyMaintenanceCost*timeslotLengthInMin/60) {
+      double charge =
+        currentSubscription.getTariff()
+                .getUsageCharge(power, currentSubscription.getTotalUsage(),
+                                false);
+      // Check if the profit from this production is worth operating the plant
+      if (charge > costPerKwh * power + hourlyMaintenanceCost
+                   * timeslotLengthInMin / MINUTES_IN_HOUR) {
         currentSubscription.usePower(power);
         log.info("Producer: " + name + " Usage: " + power);
       }
       else {
-        // We aren't getting payed for the power production so close it down;
+        // We aren't getting payed enough for the power production so close it
+        // down;
         log.debug("Didn't produced power due to negative payment");
       }
     }
@@ -242,6 +271,7 @@ public abstract class Producer
 
   /**
    * This function calculate the plant output based on the weather report
+   * 
    * @param weatherReport
    * @return the plant output, must be negative or zero
    */
@@ -249,10 +279,12 @@ public abstract class Producer
 
   /**
    * This function calculate the plant output based on the weather forecast
+   * 
    * @param timeslotIndex
    * @param weatherForecastPrediction
-   * @param previousOutput Some plants depend one the last
-   *  output to compute the next
+   * @param previousOutput
+   *          Some plants depend one the last
+   *          output to compute the next
    * @return the plant predicted output, must be negative or zero
    */
   abstract protected double
@@ -271,7 +303,7 @@ public abstract class Producer
   }
 
   /**
-   * This function subscribed to the default tariff for production of this type
+   * This function subscribes to the default tariff for production of this type
    * or of the more general PRODUCTION type.
    */
   public void subscribeDefault ()
@@ -335,6 +367,7 @@ public abstract class Producer
   /**
    * Called after deserialization. Must be implemented by the producers.
    * The implementation must call Producer.initialize();
+   * 
    * @return returns a reference to the producer a.k.a this
    */
   abstract protected Object readResolve ();
@@ -364,10 +397,9 @@ public abstract class Producer
     }
 
     /**
-     * Generates the producer's output for N hours in the future Care: this
-     * doesn't make sense for the weather sensitive producers, they should
-     * ignore the suggested preferred output or set the hours to 24 which by
-     * itself isn't very helpful.
+     * Generates the producer's output for N hours in the future
+     * Care: this doesn't make sense for the weather sensitive producers since
+     * usually we know the forecasts only 24 hours in advance.
      * 
      * @return
      */
@@ -428,22 +460,21 @@ public abstract class Producer
       double savePreferredOutput = parent.preferredOutput;
 
       // CARE Careful on the signs
-      
       for (parent.preferredOutput = 0; parent.preferredOutput >= parent.upperPowerCap; parent.preferredOutput +=
-        step * parent.upperPowerCap) {
+        STEP * parent.upperPowerCap) {
         double sum = 0;
         // Here we create the usage vector
         double[] out = new double[predictions.size()];
         double lastOut = 0;
         for (int i = 0; i < out.length; i++) {
           int timeslot = slotIter.next();
-          double usage = parent.getOutput(timeslot, predictions.get(timeslot),
-                                          lastOut);
+          double usage =
+            parent.getOutput(timeslot, predictions.get(timeslot), lastOut);
           double charge =
             tariff.getUsageCharge(parent.timeslotRepo.getTimeForIndex(timeslot),
                                   usage, sum);
-          if (charge > parent.costPerKwh*usage +
-                  parent.hourlyMaintenanceCost*parent.timeslotLengthInMin/60) {
+          if (charge > parent.costPerKwh * usage + parent.hourlyMaintenanceCost
+                       * parent.timeslotLengthInMin / MINUTES_IN_HOUR) {
             out[i] = usage;
             sum += usage;
           }
@@ -489,7 +520,7 @@ public abstract class Producer
     {
       double result = BROKER_SWITCH_FACTOR;
       if (isSuperseding)
-        return result * 5.0;
+        return result * SUPERSEEDING_MULT_FACTOR;
       return result;
     }
 
@@ -509,8 +540,9 @@ public abstract class Producer
 
   /**
    * Helper class
+   * 
    * @author Doom
-   *
+   * 
    */
   protected static class PreferredOutput
   {
@@ -587,7 +619,7 @@ public abstract class Producer
    */
   public static double getStep ()
   {
-    return step;
+    return STEP;
   }
 
   /**
@@ -761,7 +793,7 @@ public abstract class Producer
   /**
    * @return the producerAccessor
    */
-  public ProducerAccessor getProducerAccessor ()
+  public CustomerModelAccessor getProducerAccessor ()
   {
     return producerAccessor;
   }

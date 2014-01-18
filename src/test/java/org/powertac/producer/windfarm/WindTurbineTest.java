@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Locale;
 
 import org.junit.Test;
 import org.powertac.producer.utils.Curve;
@@ -54,7 +55,7 @@ public class WindTurbineTest
         out[i] = WindTurbine.calculateWindAtAltitude(altitude, z0, ua, f, 0.4);
         i++;
       }
-      pw.printf("%f,%f,%f,%f%n", altitude, out[0], out[1], out[2]);
+      pw.printf(Locale.UK,"%f,%f,%f,%f%n", altitude, out[0], out[1], out[2]);
     }
     pw.close();
   }
@@ -82,7 +83,7 @@ public class WindTurbineTest
         out[i] = WindTurbine.calculateStd(f, ua, altitude, z0);
         i++;
       }
-      pw.printf("%f,%f,%f,%f%n", altitude, out[0], out[1], out[2]);
+      pw.printf(Locale.UK,"%f,%f,%f,%f%n", altitude, out[0], out[1], out[2]);
     }
     pw.close();
   }
@@ -119,7 +120,7 @@ public class WindTurbineTest
         double power = wt.getPowerOutput(298.15, speed);
         assertTrue(power + " " + speed, power <= 0);
         assertTrue(power != Double.NEGATIVE_INFINITY);
-        pw.printf("%f,%f,%f%n", correctedHourlySpeed, -power,
+        pw.printf(Locale.UK,"%f,%f,%f%n", correctedHourlySpeed, -power,
                   c.value(correctedHourlySpeed));
       }
     }

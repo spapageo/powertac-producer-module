@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.junit.Test;
@@ -57,7 +58,6 @@ public class SolarModelTest
     File file = new File("data/dataGetSolarPosition.txt");
     file.createNewFile();
     PrintWriter pw = new PrintWriter(new File("data/dataGetSolarPosition.txt"));
-
     for (int i = 0; i < 24; i++) {
       double altitude =
         SolarModel.getSunAltitudeAngle(i, latitude,
@@ -67,7 +67,7 @@ public class SolarModelTest
                                       latitude, i);
       double incid = SolarModel.getIncidenceAngle(altitude, azimuth, 180, 45);
       if (altitude >= 0)
-        pw.printf("%d,%f,%f,%f%n", i, altitude, azimuth, incid);
+        pw.printf(Locale.UK,"%d,%f,%f,%f%n", i, altitude, azimuth, incid);
 
       if (i == 5) {
         assertEquals(6.2, altitude, 2);
@@ -118,5 +118,14 @@ public class SolarModelTest
     assertEquals(6.127,
                  SolarModel.getSolarTime(longitude, timezone,
                                          cal.getTimeInMillis()), 0.009);
+  }
+  
+  @Test
+  public void testGetSolarTime(){
+    long time = 1390046805682l;
+    double solartime = SolarModel.getSolarTime(22, 2, time);
+    assertTrue(String.valueOf(solartime),solartime >= 0 && solartime <= 24);
+    time = 1390047649598l;
+    SolarModel.getSolarTime(22, 2, time);
   }
 }

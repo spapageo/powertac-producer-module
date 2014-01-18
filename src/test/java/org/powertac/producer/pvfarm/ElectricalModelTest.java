@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Locale;
 
 import org.junit.Test;
 import org.powertac.producer.pvfarm.ElectricalModel;
@@ -49,7 +50,7 @@ public class ElectricalModelTest
           ElectricalModel.getElectricalOutput(0.20, 0.75, thermal,
                                               reflectiveLosses, 1, 1);
         assertTrue(output >= 0 && output <= 1);
-        pw.printf("%f,%f,%f%n", irradiance, temperature, output);
+        pw.printf(Locale.UK,"%f,%f,%f%n", irradiance, temperature, output);
         // System.out.println(temperature+","+panelTemp+","+irradiance);
       }
     }

@@ -15,7 +15,7 @@
 -->
 <solar-farm co2Emissions="0.0" costPerKwh="0.14" hourlyMaintenanceCost="0.0" upperPowerCap="-200.0">
   <panel>
-    <panelArrea>10.0</panelArrea>
+    <panelArea>10.0</panelArea>
     <panelLatitude>22.0</panelLatitude>
     <panelLongitude>22.0</panelLongitude>
     <panelAzimuth>180.0</panelAzimuth>

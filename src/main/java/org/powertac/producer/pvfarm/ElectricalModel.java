@@ -18,35 +18,40 @@ package org.powertac.producer.pvfarm;
 import static java.lang.Math.*;
 
 /**
+ * Helper class that provides static functions related to the electrical model
+ * of pv panel.
  * 
- */
-
-/**
  * @author Spyros papageorgiou
  * 
  */
 final class ElectricalModel
 {
+  private static final double PANEL_TEMPERATURE_MODEL_COEFF_4 = 4.3;
+  private static final double PANEL_TEMPERATURE_MODEL_COEFF_3 = 1.528;
+  private static final double PANEL_TEMPERATURE_MODEL_COEFF_2 = 0.028;
+  private static final double PANEL_TEMPERATURE_MODEL_COEFF_1 = 0.943;
+
   private ElectricalModel ()
   {
+    // Should't be called ever
   }
 
   /**
    * Calculate the panel electrical output
    * 
    * @param referenceConvertionCoeff
-   *          the reference efficiency of the panel
+   *          the reference efficiency of the panel > 0 & < 1
    * @param staticLosses
-   *          the static losses of the panel
+   *          the static losses of the panel > 0 & < 1
    * @param thermalLossesCoeff
-   *          the thermal losses coefficient
+   *          the thermal losses coefficient > 0 & < 1
    * @param reflectiveLosses
-   *          the reflective losses coeeficient
+   *          the reflective losses coefficient > 0 & < 1
    * @param irradiance
-   *          the input irradiance
+   *          the input irradiance in w/m^2
    * @param panelArrea
-   *          the panel arrea
-   * @return the power output
+   *          the panel arrea in m^2
+   * @return the power output >= 0 in watt
    */
   protected static double getElectricalOutput (double referenceConvertionCoeff,
                                                double staticLosses,
@@ -60,18 +65,18 @@ final class ElectricalModel
   }
 
   /**
-   * calculate the reflective losses
+   * Calculates the reflective losses
    * 
-   * @param incidanceanle
-   *          incidance angle
+   * @param incidenceAngle
+   *          Incidence angle
    * @param clearnessindex
    *          clearness index 0.2-0.3
-   * @return the reflective losses
+   * @return the reflective losses > 0 & <= 1
    */
-  protected static double getReflectiveLossCoeff (double incidanceanle,
+  protected static double getReflectiveLossCoeff (double incidenceAngle,
                                                   double clearnessindex)
   {
-    return (1 - pow(E, -cos(toRadians(incidanceanle)) / clearnessindex))
+    return (1 - pow(E, -cos(toRadians(incidenceAngle)) / clearnessindex))
            / (1 - pow(E, -1 / clearnessindex));
   }
 
@@ -81,7 +86,7 @@ final class ElectricalModel
    * @param ambientTemp
    *          The ambient temperature
    * @param windspeed
-   *          The windspeed
+   *          The wind speed
    * @param irradiance
    *          The input irradiance
    * @return the panel temperature
@@ -90,28 +95,28 @@ final class ElectricalModel
                                                double windspeed,
                                                double irradiance)
   {
-    return 0.943 * ambientTemp + 0.028 * irradiance - 1.528 * windspeed + 4.3;
+    return PANEL_TEMPERATURE_MODEL_COEFF_1 * ambientTemp
+           + PANEL_TEMPERATURE_MODEL_COEFF_2 * irradiance
+           - PANEL_TEMPERATURE_MODEL_COEFF_3 * windspeed
+           + PANEL_TEMPERATURE_MODEL_COEFF_4;
   }
 
   /**
    * Calculate the thermal losses coefficient
    * 
    * @param b
+   *          the rate at which the extra temperature degrades efficiency
    * @param Tpanel
-   *          panel temperature
+   *          panel temperature in Kelvin
    * @param Tref
-   *          reference temperatur of the panel
-   * @param gamma
+   *          reference temperature of the panel in Kelvin
    * @param irradiance
-   *          input irradiance
-   * @return
+   *          input irradiance in watt/m^2
+   * @return the losses coefficient > 0 & <= 1
    */
   protected static double getThermalLossCoeff (double b, double Tpanel,
                                                double Tref)
   {
-    assert (b > 0);
-    assert (Tpanel > 0);
-    assert (Tref > 0);
     if (Tpanel > Tref)
       return 1 - b * (Tpanel - Tref);
     else

@@ -36,52 +36,91 @@ import static java.lang.Math.*;
 @XStreamAlias("steam-plant")
 public class SteamPlant extends Producer
 {
+  private static final double DEFAULT_FOSSIL_POWER_COST_PER_KWH = 0.1;
+  private static final double DEFAULT_FOSSIL_CO2_EMISSIONS = 1.5;
+  private static final double BOTTOM_THRESHOLD_MULT = 0.01;
+  private static final int DEFAULT_FOSSIL_PROFILE_HOURS = 24;
+
   private double adjustmentSpeed;
   private double diviation;
+
   @XStreamOmitField
   private double lastOutput;
-  
+
+  /**
+   * The only constructor for the fossil steam plant
+   * 
+   * @param adjustmentSpeed
+   *          the maximum amount of output change in one minute
+   * @param diviation
+   *          the deviation of the plant output
+   * @param capacity
+   *          the plant capacity
+   */
   public SteamPlant (double adjustmentSpeed, double diviation, double capacity)
   {
     // Maybe change the profile hours
-    super("Steam plant", PowerType.FOSSIL_PRODUCTION, 24, capacity);
+    super("Steam plant", PowerType.FOSSIL_PRODUCTION,
+          DEFAULT_FOSSIL_PROFILE_HOURS, capacity);
+
     if (adjustmentSpeed <= 0 || diviation <= 0)
       throw new IllegalArgumentException();
     this.lastOutput = capacity;
     this.adjustmentSpeed = adjustmentSpeed;
     this.diviation = diviation;
-    this.co2Emissions = 1.5;
-    this.costPerKwh = 0.1;
+    this.co2Emissions = DEFAULT_FOSSIL_CO2_EMISSIONS;
+    this.costPerKwh = DEFAULT_FOSSIL_POWER_COST_PER_KWH;
 
   }
 
+  /**
+   * Generate the the energy output for plant in kwh
+   * 
+   * @return the energy <= 0
+   */
   public double getOutput ()
   {
+    // We need to add at least 3 point to the curve for it to work
     Curve out = new Curve();
+    // One
     out.add(0, lastOutput);
-    if (abs(preferredOutput - lastOutput) > 0.01 * abs(upperPowerCap)) {
+
+    // Check if lastOuput and preferredOutput aren't very close
+    if (abs(preferredOutput - lastOutput) > BOTTOM_THRESHOLD_MULT
+                                            * abs(upperPowerCap)) {
+      // Calculate when will this plant reach the
       double time =
         (preferredOutput - lastOutput)
                 / (signum(preferredOutput - lastOutput) * adjustmentSpeed);
+      // Two
       out.add(time / 2,
               (signum(preferredOutput - lastOutput) * adjustmentSpeed) * time
                       / 2 + lastOutput);
+      // Three
       out.add(time, preferredOutput);
     }
     else {
+      // Two
       out.add(timeslotLengthInMin / 2, preferredOutput);
+      // Three
       out.add(timeslotLengthInMin, preferredOutput);
     }
 
     double outSum = 0.0;
     for (double t = 0.0; t < timeslotLengthInMin; t++) {
-      outSum += out.value(t) + seed.nextGaussian() * diviation;
+      // gaussian sample
+      outSum += -abs(out.value(t) + seed.nextGaussian() * diviation);
     }
 
-    lastOutput = out.value(60.0);
-    if (Double.isInfinite(outSum) || Double.isNaN(outSum))
-      throw new IllegalStateException("Invalid power");
-    return outSum / 60.0;
+    lastOutput = out.value(MINUTES_IN_HOUR);
+
+    if (Double.isInfinite(outSum) || Double.isNaN(outSum) || outSum > 0) {
+      String cause =
+        String.format("PrefferedOutput: %f lastOutput: %f%n", preferredOutput,
+                      lastOutput);
+      throw new IllegalStateException("Invalid power. " + cause);
+    }
+    return outSum / MINUTES_IN_HOUR;
   }
 
   /**
@@ -91,8 +130,8 @@ public class SteamPlant extends Producer
   {
     this.lastOutput = this.upperPowerCap;
     this.name = "Steam plant";
-    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
-               IdGenerator.createId());
+    initialize(name, PowerType.FOSSIL_PRODUCTION, DEFAULT_FOSSIL_PROFILE_HOURS,
+               upperPowerCap, IdGenerator.createId());
     return this;
   }
 

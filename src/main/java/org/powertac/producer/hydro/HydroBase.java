@@ -20,28 +20,63 @@ import org.powertac.producer.Producer;
 import org.powertac.producer.utils.Curve;
 
 /**
+ * This is the base class for the Dam and RunofRiver classes. Used to
+ * encapsulate common behavior.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 public abstract class HydroBase extends Producer
 {
+  private static final int DEFAULT_HYDRO_PROFILE_HOURS = 24;
+  private static final double WATER_DENSITY = 999.972;
+  private static final double G = 9.80665;
+
+  // The input flow graph for every day of the year
   protected Curve inputFlow;
+  // The minimum flow needed to operate the turbines
   protected double minFlow;
+  // The maximum flow needed to operate the turbines
   protected double maxFlow;
-  private static double waterDensity = 999.972;
-  private static double g = 9.80665;
+  // The turbine efficiency graph as a function of the percentage of the maxFlow
   protected Curve turbineEfficiency;
+  // The plants current stored water volume
   protected double volume;
+  // The plants current height difference between the input and output
   protected double height;
+  // The plants height losses
   protected double staticLosses;
 
+  /**
+   * The only HydroBase constructor.
+   * 
+   * @param name
+   *          the plants name
+   * @param inputFlow
+   *          the input flow graph from a whole year
+   * @param minFlow
+   *          the minimal flow needed to operate the turbines
+   * @param maxFlow
+   *          the maximum flow that the turbines can handle
+   * @param turbineEfficiency
+   *          the turbine efficiency graph as a function of the
+   *          percentage of maximum flow
+   * @param initialVolume
+   *          the initial dam volume
+   * @param initialHeight
+   * @param capacity
+   *          the plant rated capacity < 0
+   * @param staticLosses
+   *          the static plant losses < 0
+   */
   public HydroBase (String name, Curve inputFlow, double minFlow,
                     double maxFlow, Curve turbineEfficiency,
                     double initialVolume, double initialHeight,
                     double capacity, double staticLosses)
   {
     // no dam production put both on run of the river
-    super(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, capacity);
+    super(name, PowerType.RUN_OF_RIVER_PRODUCTION, DEFAULT_HYDRO_PROFILE_HOURS,
+          capacity);
     if (inputFlow == null || minFlow < 0 || maxFlow < minFlow
         || turbineEfficiency == null || initialVolume < 0 || initialHeight < 0
         || staticLosses < 0 || staticLosses > 1)
@@ -55,43 +90,88 @@ public abstract class HydroBase extends Producer
     this.staticLosses = staticLosses;
   }
 
+  /**
+   * Calculate the hydro plants output based on the day of the year
+   * 
+   * @param day
+   *          day of the year
+   * @return the energy output in kwh < 0
+   */
   protected double getOutput (int day)
   {
     if (day < 0 || day > 366)
       throw new IllegalArgumentException();
 
+    // Calculate the water flow of the turbine based on the one the enters
+    // the plant
     double waterFlow = getFlow(inputFlow.value(day));
 
+    // Calculate the turbine efficiency
     double turbEff = turbineEfficiency.value(waterFlow / maxFlow);
 
-    // make the power into kwh
+    // convert the power into kwh
     double power =
       -getWaterPower(staticLosses, turbEff, waterFlow, height)
-              * timeslotLengthInMin / (60 * 1000);
+              * timeslotLengthInMin / (MINUTES_IN_HOUR * WATT_IN_KILOWATT);
 
+    // Update the facility's volume based on input and output flow
     updateVolume(inputFlow.value(day), waterFlow);
+    // Update the facility's height
     updateHeigth();
-    if (power > 0)
-      throw new IllegalStateException("Positive power");
+    if (power > 0 || Double.isInfinite(power) || Double.isNaN(power))
+      throw new IllegalStateException("Invalid Power");
     return power;
 
   }
 
+  /**
+   * Calculate the water power that is captured by the turbines
+   * and converted to electricity
+   * 
+   * @param staticLosseCoef
+   *          the plants static losses > 0 & <= 1
+   * @param turbineEff
+   *          the turbine efficiency > 0 & <= 1
+   * @param flow
+   *          the water flow > 0
+   * @param heigth
+   *          the height difference between input and output > 0
+   * @return
+   */
   protected double getWaterPower (double staticLosseCoef, double turbineEff,
                                   double flow, double heigth)
   {
     if (flow >= minFlow && flow <= maxFlow)
-      return staticLosseCoef * turbineEff * waterDensity * g * heigth * flow;
+      return staticLosseCoef * turbineEff * WATER_DENSITY * G * heigth * flow;
     else if (flow > maxFlow)
-      return staticLosseCoef * turbineEff * waterDensity * g * heigth * maxFlow;
+      return staticLosseCoef * turbineEff * WATER_DENSITY * G * heigth
+             * maxFlow;
     else
       return 0;
   }
 
+  /**
+   * This function update the hydro plants volume after one timeslot has passed
+   * 
+   * @param avInputFlow
+   *          input flow
+   * @param turbineFlow
+   *          turbine or output flow
+   */
   protected abstract void updateVolume (double avInputFlow, double turbineFlow);
 
+  /**
+   * Update the hydro plant's height difference between input and output
+   */
   protected abstract void updateHeigth ();
 
+  /**
+   * Get the output/turbine flow
+   * 
+   * @param avInputFlow
+   *          average input flow > 0
+   * @return the turbine/output flow > 0
+   */
   protected abstract double getFlow (double avInputFlow);
 
   /**

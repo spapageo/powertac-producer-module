@@ -17,6 +17,7 @@ package org.powertac.producer.pvfarm;
 
 import static org.junit.Assert.*;
 
+import java.util.Calendar;
 import java.util.TimeZone;
 
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class PvPanelTest
     String out = x.toXML(panel);
     panel = (PvPanel) x.fromXML(out);
     assertTrue(panel.getCapacity() == -1);
-    assertTrue(panel.getPanelArrea() == 10);
+    assertTrue(panel.getPanelArea() == 10);
 
   }
 
@@ -42,11 +43,12 @@ public class PvPanelTest
   public void testOutput ()
   {
     PvPanel panel = new PvPanel(1, 22, 22, 180, 45, 0.3, -100);
-    long startTime = System.currentTimeMillis();
+    Calendar cal = Calendar.getInstance();
     double outSum = 0.0;
     for (int i = 0; i < 24; i++) {
-      outSum += panel.getOutput(startTime, TimeZone.getDefault(), 0, 308, 4);
-      startTime += 60 * 60 * 1000;
+      long time = cal.getTimeInMillis();
+      outSum += panel.getOutput(time, TimeZone.getDefault(), 0, 308, 4);
+      cal.add(Calendar.HOUR, 1);
     }
     assertTrue(outSum > -2);
   }

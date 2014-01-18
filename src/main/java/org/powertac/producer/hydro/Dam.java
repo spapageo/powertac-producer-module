@@ -25,17 +25,46 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
+ * This class models a hydro dam. It uses a volume-height graph to calculate
+ * the height of the dam. An an inverse power and efficiency curve the get the
+ * preferred output.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 @XStreamAlias("dam")
 public class Dam extends HydroBase
 {
+  private static final int UNIT_HEIGHT = 1;
+  private static final int DEFAULT_DAM_MODELLING_DURATION = 24;
+  private static final double DEFAULT_DAM_COST_PER_KWH = 0.03;
 
+  // a volume-height graph volumeHeight.value(volume) = height
   private Curve volumeHeight;
   @XStreamOmitField
   private Curve invCurveOut;
 
+  /**
+   * Construct a {@link Dam} with the below arguments.
+   * 
+   * @param inputFlow
+   *          the input flow graph from a whole year
+   * @param minFlow
+   *          the minimal flow needed to operate the turbines
+   * @param maxFlow
+   *          the maximum flow that the turbines can handle
+   * @param turbineEfficiency
+   *          the turbine efficiency graph as a function of the
+   *          percentage of maximum flow
+   * @param volumeHeigth
+   *          the volume heigth-graph
+   * @param initialVolume
+   *          the initial dam volume
+   * @param capacity
+   *          the plant rated capacity < 0
+   * @param staticLosses
+   *          the static plant losses < 0
+   */
   public Dam (Curve inputFlow, double minFlow, double maxFlow,
               Curve turbineEfficiency, Curve volumeHeigth,
               double initialVolume, double capacity, double staticLosses)
@@ -43,20 +72,27 @@ public class Dam extends HydroBase
     super("Dam", inputFlow, minFlow, maxFlow, turbineEfficiency, initialVolume,
           volumeHeigth.value(initialVolume), capacity, staticLosses);
     this.volumeHeight = volumeHeigth;
-    this.costPerKwh = 0.03;
+    this.costPerKwh = DEFAULT_DAM_COST_PER_KWH;
+
     calculateInvOut();
   }
 
+  /**
+   * Calculate the inverse output graph for unit height so that we know for
+   * which flow we get the output required.
+   */
   protected void calculateInvOut ()
   {
     Curve c = new Curve();
     // calculate inverse curve output function for unit height
     for (double flow = minFlow; flow <= maxFlow; flow +=
-      (maxFlow - minFlow) / 10) {
+      STEP * (maxFlow - minFlow)) {
       double pow =
         getWaterPower(this.staticLosses,
-                      this.turbineEfficiency.value(flow / maxFlow), flow, 1)
-                * timeslotLengthInMin / (1000 * 60);
+                      this.turbineEfficiency.value(flow / maxFlow), flow,
+                      UNIT_HEIGHT)
+                * timeslotLengthInMin
+                / (WATT_IN_KILOWATT * MINUTES_IN_HOUR);
       c.add(flow, pow);
     }
 
@@ -66,14 +102,17 @@ public class Dam extends HydroBase
   @Override
   protected void updateVolume (double avarageinputFlow, double computedFlow)
   {
-    this.volume += (avarageinputFlow - computedFlow) * timeslotLengthInMin * 60;
+    this.volume +=
+      (avarageinputFlow - computedFlow) * timeslotLengthInMin
+              * SECONDS_IN_MINUTE;
   }
 
   @Override
   protected double getFlow (double avarageInputFlow)
   {
     if (height != 0)
-      return invCurveOut.value(-preferredOutput / height);
+      return invCurveOut.value(-preferredOutput * MINUTES_IN_HOUR
+                               / (height * timeslotLengthInMin));
     else
       return avarageInputFlow;
   }
@@ -106,7 +145,8 @@ public class Dam extends HydroBase
   protected Object readResolve ()
   {
     this.name = "Dam";
-    initialize(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, upperPowerCap,
+    initialize(name, PowerType.RUN_OF_RIVER_PRODUCTION,
+               DEFAULT_DAM_MODELLING_DURATION, upperPowerCap,
                IdGenerator.createId());
     calculateInvOut();
     return this;

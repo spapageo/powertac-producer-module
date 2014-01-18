@@ -24,6 +24,9 @@ import org.powertac.producer.utils.Curve;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * This models a run of the river plant with virtually no capacity and static
+ * height.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
@@ -31,6 +34,30 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class RunOfRiver extends HydroBase
 {
 
+  private static final double DEFAULT_RUNOFRIVER_COST_PER_KWH = 0.08;
+  private static final int DEFAULT_RUNOFRIVER_PROFILE_HOURS = 24;
+
+  /**
+   * The only {@link RunOfRiver} constructor. It constructs an instance with
+   * the following argument.
+   * 
+   * @param inputFlow
+   *          the input flow graph from a whole year
+   * @param minFlow
+   *          the minimal flow needed to operate the turbines
+   * @param maxFlow
+   *          the maximum flow that the turbines can handle
+   * @param turbineEfficiency
+   *          the turbine efficiency graph as a function of the
+   *          percentage of maximum flow
+   * @param initialVolume
+   *          the initial dam volume
+   * @param initialHeight
+   * @param capacity
+   *          the plant rated capacity < 0
+   * @param staticLosses
+   *          the static plant losses < 0
+   */
   public RunOfRiver (Curve inputFlow, double minFlow, double maxFlow,
                      Curve turbineEfficiency, double initialVolume,
                      double initialHeight, double staticLosses, double capacity)
@@ -38,24 +65,25 @@ public class RunOfRiver extends HydroBase
     super("Run of the river hydro plant", inputFlow, minFlow, maxFlow,
           turbineEfficiency, initialVolume, initialHeight, capacity,
           staticLosses);
-    this.costPerKwh = 0.08;
+    this.costPerKwh = DEFAULT_RUNOFRIVER_COST_PER_KWH;
   }
 
   @Override
   protected void updateVolume (double avInputFlow, double computedFlow)
   {
-    // no need to do anything
+    // no need to do anything the volume is static
   }
 
   @Override
   protected void updateHeigth ()
   {
-    // no need to do anything
+    // no need to do anything the height is static
   }
 
   @Override
   protected double getFlow (double avInputFlow)
   {
+    // All the flow passes through to the turbines
     return avInputFlow;
   }
 
@@ -81,7 +109,8 @@ public class RunOfRiver extends HydroBase
   protected Object readResolve ()
   {
     this.name = "Run of the river hydro plant";
-    initialize(name, PowerType.RUN_OF_RIVER_PRODUCTION, 24, upperPowerCap,
+    initialize(name, PowerType.RUN_OF_RIVER_PRODUCTION,
+               DEFAULT_RUNOFRIVER_PROFILE_HOURS, upperPowerCap,
                IdGenerator.createId());
     return this;
   }

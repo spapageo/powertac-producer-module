@@ -21,38 +21,89 @@ import java.util.TimeZone;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
+import static org.powertac.producer.pvfarm.SolarFarm.*;
+
 /**
+ * This class models a pv panel. It works 
+ * by modeling the suns position to calculate the irradiance on the panel.
+ * It also models the effect of clouds on the output.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 @XStreamAlias("panel")
 public class PvPanel
 {
-  private double panelArrea;
+  private static final double DEFAULT_M = 0;
+  private static final double DEFAULT_S = 0;
+  private static final double DEFAULT_R = -1.06;
+  private static final double DEFAULT_Q = 0.33;
+  private static final double DEFAULT_P = 0.95;
+  private static final double DEFAULT_PANEL_CLEARNESS_INDEX = 0.2;
+  private static final double DEFAULT_PANEL_REFERENCE_TEMP = 313.15;
+  private static final double DEFAULT_EFFICIENCY_DEGRATION_WITH_TEMP = 0.0045;
+  private static final int DEFAULT_OZONE_COMPRESSED_DEPTH = 3;
+  private static final double DEFAULT_HUMIDITY = 0.2;
+  private static final double DEFAULT_STATIC_LOSSES = 0.78;
+  private static final double DEFAULT_GROUND_ALBEDO = 0.2;
+  private static final double DEFAULT_AEROSOL_FERLACTION_DEPTH_RATIO = 0.95;
+  private static final int DEFAULT_PRESSURE = 101325;
+  private static final double DEFAULT_AEROSOL_ABSORPTION_COEF = 0.95;
+  // The panel area in m^2
+  private double panelArea;
+  //The panel latitude in degrees
   private double panelLatitude;
+  //The panel longitude in degrees
   private double panelLongitude;
+  //The panel azimuth in degrees
   private double panelAzimuth;
+  //The panel tilt in degrees
   private double panelTilt;
+  //The panel efficiency in 
   private double panelEfficiency;
-  private double groundAlbedo = 0.2;
-  private double humidity = 0.2;
-  private double ozoneLayerDepth = 3;
-  private double pressure = 101325;
-  private double Ta = 0.95;
-  private double w0 = 0.95;
-  private double p = 0.95;
-  private double q = 0.33;
-  private double r = -1.06;
-  private double s = 0;
-  private double m = 0;
-  private double b = 0.0045;
-  private double Tref = 313.15;
-  private double staticLosses = 0.78;
-  private double clearIndex = 0.2;
+  // The static system losses > 0 & <= 1
+  private double staticLosses = DEFAULT_STATIC_LOSSES;
+  // The ground reflection coefficient
+  private double groundAlbedo = DEFAULT_GROUND_ALBEDO;
+  // The humidity at the pv panel site
+  private double humidity = DEFAULT_HUMIDITY;
+  //The ozone layer compressed depth in mm
+  private double ozoneLayerDepth = DEFAULT_OZONE_COMPRESSED_DEPTH;
+  // Air pressure in Pa at the pv panel site
+  private double pressure = DEFAULT_PRESSURE;
+  // Aerosol absorption coefficient
+  private double Ta = DEFAULT_AEROSOL_ABSORPTION_COEF;
+  // The ration of reflective to total depth of propagation due to aerosol
+  private double w0 = DEFAULT_AEROSOL_FERLACTION_DEPTH_RATIO;
+  // These are coefficient used to estimate the cloud cover absorption 
+  // coefficient
+  private double p = DEFAULT_P;
+  private double q = DEFAULT_Q;
+  private double r = DEFAULT_R;
+  private double s = DEFAULT_S;
+  private double m = DEFAULT_M;
+  // The rate at which the extra temperature degrades efficiency
+  private double b = DEFAULT_EFFICIENCY_DEGRATION_WITH_TEMP;
+  // The reference panel temperature in kelvin.
+  private double Tref = DEFAULT_PANEL_REFERENCE_TEMP;
+  // The clearness index of the panel. Used to calculate the reflective losses
+  private double clearIndex = DEFAULT_PANEL_CLEARNESS_INDEX;
+  // The pv panels nominal capacity in kw < 0
   private double capacity;
+  //default timeslot length for which energy is calculated
   @XStreamOmitField
-  private int timeslotLengthInMin = 60;
+  private int timeslotLengthInMin = MINUTES_IN_HOUR;
 
+  /**
+   * Construct an instance of a Pv panel.
+   * @param panelArrea the panel area in m^2
+   * @param panelLatitude panel latitude in degrees
+   * @param panelLongitude panel longitude in degrees
+   * @param panelAzimuth panel azimuth in degrees
+   * @param panelTilt panel tilt in degrees
+   * @param referenceEfficiency the panel reference efficiency
+   * @param capacity
+   */
   public PvPanel (double panelArrea, double panelLatitude,
                   double panelLongitude, double panelAzimuth, double panelTilt,
                   double referenceEfficiency, double capacity)
@@ -63,7 +114,7 @@ public class PvPanel
         || panelLongitude <= -180 || panelLongitude >= 180
         || referenceEfficiency > 1)
       throw new IllegalArgumentException();
-    this.panelArrea = panelArrea;
+    this.panelArea = panelArrea;
     this.panelLatitude = panelLatitude;
     this.panelLongitude = panelLongitude;
     this.panelAzimuth = panelAzimuth;
@@ -72,17 +123,27 @@ public class PvPanel
     this.capacity = capacity;
   }
 
+  /**
+   * Calculate the energy output of this panel in kwh
+   * @param systemTime
+   * @param timezone
+   * @param cloudcover
+   * @param temperature
+   * @param windspeed
+   * @return
+   */
   public double getOutput (long systemTime, TimeZone timezone,
                            double cloudcover, double temperature,
                            double windspeed)
   {
-    // assuming duration of one hour
+
     // do the calculations once for every minute
     Calendar cal = Calendar.getInstance(timezone);
 
     cal.setTimeInMillis(systemTime);
 
-    int timezoneOffset = cal.get(Calendar.ZONE_OFFSET) / (60 * 60 * 1000);
+    int timezoneOffset = cal.get(Calendar.ZONE_OFFSET) /
+            (MINUTES_IN_HOUR * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND);
     double sum = 0;
 
     for (int i = 0; i < timeslotLengthInMin; i++) {
@@ -163,7 +224,7 @@ public class PvPanel
           ElectricalModel.getElectricalOutput(panelEfficiency, staticLosses,
                                               thermaLosCoeff,
                                               reflectiveLosCoeff, inputIrrad,
-                                              panelArrea);
+                                              panelArea);
 
         sum = sum + output;
       }
@@ -172,26 +233,26 @@ public class PvPanel
 
     if (Double.isInfinite(sum) || Double.isNaN(sum))
       throw new IllegalStateException("Power produced isn't a number");
-    return -sum / (1000 * 60);
+    return -sum / (WATT_IN_KILOWATT * MINUTES_IN_HOUR);
   }
 
   /**
    * @return the panelArrea
    */
-  public double getPanelArrea ()
+  public double getPanelArea ()
   {
-    return panelArrea;
+    return panelArea;
   }
 
   /**
-   * @param panelArrea
+   * @param panelArea
    *          the panelArrea to set
    */
-  public void setPanelArrea (double panelArrea)
+  public void setPanelArea (double panelArea)
   {
-    if (panelArrea < 0)
+    if (panelArea < 0)
       throw new IllegalArgumentException();
-    this.panelArrea = panelArrea;
+    this.panelArea = panelArea;
   }
 
   /**

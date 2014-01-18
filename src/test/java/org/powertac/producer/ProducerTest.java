@@ -370,8 +370,8 @@ public class ProducerTest
   {
     // TODO
     SteamPlant plant = new SteamPlant(10000, 2000, -500000);
-    List<WeatherForecastPrediction> predictions = 
-            new ArrayList<WeatherForecastPrediction>();
+    List<WeatherForecastPrediction> predictions =
+      new ArrayList<WeatherForecastPrediction>();
     predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(2, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(3, 22, 5, 0.5, 0));
@@ -442,10 +442,10 @@ public class ProducerTest
   @Test
   public void testCalculateOutputTiered ()
   {
-    
+
     SteamPlant plant = new SteamPlant(10000, 2000, -500000);
-    List<WeatherForecastPrediction> predictions = 
-            new ArrayList<WeatherForecastPrediction>();
+    List<WeatherForecastPrediction> predictions =
+      new ArrayList<WeatherForecastPrediction>();
     predictions.add(new WeatherForecastPrediction(1, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(2, 22, 5, 0.5, 0));
     predictions.add(new WeatherForecastPrediction(3, 22, 5, 0.5, 0));
@@ -494,7 +494,7 @@ public class ProducerTest
     assertTrue(out.length == 24);
 
     assertTrue(Math.abs(pref) < Math.abs(plant.upperPowerCap));
-    assertEquals(-250000, pref,1000);
+    assertEquals(-250000, pref, 1000);
 
   }
 

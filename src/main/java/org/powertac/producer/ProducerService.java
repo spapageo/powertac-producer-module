@@ -59,7 +59,7 @@ import com.thoughtworks.xstream.XStream;
  */
 @Service
 public class ProducerService extends TimeslotPhaseProcessor
-implements NewTariffListener, InitializationService
+  implements NewTariffListener, InitializationService
 {
 
   /**
@@ -68,7 +68,7 @@ implements NewTariffListener, InitializationService
    * debugging.
    */
   static final private Logger log = Logger.getLogger(ProducerService.class
-                                                     .getName());
+          .getName());
 
   @Autowired
   private TariffMarket tariffMarketService;
@@ -82,11 +82,11 @@ implements NewTariffListener, InitializationService
   // The place where the xml files of the producers are stored
   private String producerFileFolder;
 
-  private final String[] defaultProducers = {"/conf/dam.xml",
+  private final String[] defaultProducers = { "/conf/dam.xml",
                                              "/conf/runoftheriver.xml",
                                              "/conf/solar-farm.xml",
                                              "/conf/steam-plant.xml",
-                                             "/conf/wind-farm.xml"};
+                                             "/conf/wind-farm.xml" };
 
   private List<Producer> producerList = new ArrayList<Producer>();
 
@@ -103,7 +103,7 @@ implements NewTariffListener, InitializationService
 
   @Override
   public String
-  initialize (Competition competition, List<String> completedInits)
+    initialize (Competition competition, List<String> completedInits)
   {
     int index = completedInits.indexOf("DefaultBroker");
     if (index == -1) {
@@ -113,10 +113,9 @@ implements NewTariffListener, InitializationService
     serverPropertiesService.configureMe(this);
     if (producerFileFolder == null)
       log.error("The supplied configuration path was invalid. Will load default "
-              + "implementations.");
+                + "implementations.");
     else
       log.info("The configuration folder is located at: " + producerFileFolder);
-
 
     // Clear the list of producers and create new ones
     producerList.clear();
@@ -139,10 +138,18 @@ implements NewTariffListener, InitializationService
     return "Producer";
   }
 
+  /**
+   * This function de-serializes the producers into objects and returns a list
+   * with the resulting objects
+   * 
+   * @return
+   * @throws IOException
+   */
   protected List<Producer> loadProducers () throws IOException
   {
     List<Producer> producers = new ArrayList<Producer>();
 
+    // filters the xml files
     FileFilter filter = new FileFilter() {
       @Override
       public boolean accept (File pathname)
@@ -155,6 +162,7 @@ implements NewTariffListener, InitializationService
       }
     };
 
+    // Help xstream understand the xml files
     XStream xstream = new XStream();
     xstream.processAnnotations(SteamPlant.class);
     xstream.processAnnotations(Dam.class);
@@ -166,12 +174,9 @@ implements NewTariffListener, InitializationService
     xstream.processAnnotations(PvPanel.class);
     xstream.processAnnotations(Producer.class);
 
-
-    
-    if(producerFileFolder == null)
-    {
-      for(String name : defaultProducers)
-      {
+    // this loads the default producers
+    if (producerFileFolder == null) {
+      for (String name: defaultProducers) {
         InputStream stream = ProducerService.class.getResourceAsStream(name);
         Producer producer = (Producer) xstream.fromXML(stream);
         producers.add(producer);
@@ -179,19 +184,19 @@ implements NewTariffListener, InitializationService
       }
       return producers;
     }
-    
+
     File confFolder = new File(this.producerFileFolder);
-    if (!confFolder.isDirectory() || !confFolder.exists())
-    {
+    if (!confFolder.isDirectory() || !confFolder.exists()) {
+      // folder is wrong return an empty array
       log.error("The supplied configuration path was invalid.");
     }
-    else
-    {
+    else {
+      // iterate over all the files and dererialize them
       for (File conf: confFolder.listFiles(filter)) {
         String name = conf.toString().toLowerCase();
         if (name.contains("steam") || name.contains("dam")
-                || name.contains("river") || name.contains("solar")
-                || name.contains("wind")) {
+            || name.contains("river") || name.contains("solar")
+            || name.contains("wind")) {
           Producer producer = (Producer) xstream.fromXML(conf);
           producers.add(producer);
         }
@@ -237,7 +242,7 @@ implements NewTariffListener, InitializationService
    */
   @ConfigurableValue(valueType = "String", description = "The root of the xml configurations files.")
   public
-  void setProducerFileFolder (String producerFileFolder)
+    void setProducerFileFolder (String producerFileFolder)
   {
     this.producerFileFolder = producerFileFolder;
   }

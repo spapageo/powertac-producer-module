@@ -27,6 +27,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 /**
+ * Represents a curve from the supplied points using spline interpolation.
+ * At least 3 points must be provided. 
+ * 
  * @author Doom
  * 
  */
@@ -53,7 +56,8 @@ public class Curve
   private double lastX = -1;
 
   // The x-y axis of the data
-  protected LinkedHashMap<Double, Double> xy = new LinkedHashMap<Double, Double>();
+  protected LinkedHashMap<Double, Double> xy =
+    new LinkedHashMap<Double, Double>();
 
   // Need to rebuild the spline
   boolean needRebuild = true;
@@ -62,10 +66,20 @@ public class Curve
 
   private SplineInterpolator interpolator = new SplineInterpolator();
 
+  /**
+   * Default constructor.
+   */
   public Curve ()
   {
+    //Nothing done here
   }
 
+  /**
+   * Initialize this curve with the supplied points.
+   * Points should be given in an increasing x way.  
+   * @param x
+   * @param y
+   */
   public Curve (double x[], double y[])
   {
     if (x.length != y.length) {
@@ -188,7 +202,7 @@ public class Curve
   }
 
   /**
-   * Check whether this curve is invertible
+   * Return the invertible part of this curve
    * 
    * @return
    */

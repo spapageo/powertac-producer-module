@@ -29,6 +29,10 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
+ * This producer models a wind farm composed by individuals wind turbines. It
+ * uses power curve to model its turbine and also model wind shear and
+ * turbulence effects
+ * 
  * @author Spyros Papageorgiou
  * 
  */
@@ -36,10 +40,18 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
 public class WindFarm extends Producer
 {
 
+  private static final double DEFAULT_WIND_FARM_COST_PER_KWH = 0.08;
+  private static final int DEFAULT_WIND_FARM_PROFILE_HOURS = 24;
+  private static final double CELCIUS_TO_KELVIN = 273.15;
+
+  /**
+   * Constructs an empty wind farm.
+   */
   public WindFarm ()
   {
-    super("Wind farm", PowerType.WIND_PRODUCTION, 24, 0);
-    this.costPerKwh = 0.08;
+    super("Wind farm", PowerType.WIND_PRODUCTION,
+          DEFAULT_WIND_FARM_PROFILE_HOURS, 0);
+    this.costPerKwh = DEFAULT_WIND_FARM_COST_PER_KWH;
   }
 
   // The list of turbines in this farm
@@ -91,8 +103,8 @@ public class WindFarm extends Producer
   }
 
   /**
-   * Executes the project simulation and return the power output for the given
-   * inputs
+   * Calculate the total output of this farm by calling the the getOutput method
+   * on each wind turbine.
    * 
    * @param temperature
    * @param windSpeed
@@ -102,14 +114,16 @@ public class WindFarm extends Producer
   {
     double sumOutput = 0;
     for (WindTurbine wt: turbines) {
-      sumOutput += wt.getPowerOutput(temperature, windSpeed);
+      if (Math.abs(sumOutput) < Math.abs(preferredOutput))
+        sumOutput += wt.getPowerOutput(temperature, windSpeed);
+      else
+        break;
     }
-    if (Double.isInfinite(sumOutput) || Double.isNaN(sumOutput))
-    {
-      String arguments = String.format("Wind: %f Temperature: %f%n",
-                                       windSpeed,temperature);
+    if (Double.isInfinite(sumOutput) || Double.isNaN(sumOutput)) {
+      String arguments =
+        String.format("Wind: %f Temperature: %f%n", windSpeed, temperature);
       throw new IllegalStateException("Power produced isn't a number. "
-                                       + arguments);
+                                      + arguments);
     }
     return sumOutput;
   }
@@ -117,7 +131,7 @@ public class WindFarm extends Producer
   @Override
   protected double getOutput (WeatherReport weatherReport)
   {
-    return getPowerOutput(weatherReport.getTemperature() + 273.15,
+    return getPowerOutput(weatherReport.getTemperature() + CELCIUS_TO_KELVIN,
                           weatherReport.getWindSpeed());
   }
 
@@ -127,7 +141,8 @@ public class WindFarm extends Producer
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput)
   {
-    return getPowerOutput(weatherForecastPrediction.getTemperature() + 273.15,
+    return getPowerOutput(weatherForecastPrediction.getTemperature()
+                                  + CELCIUS_TO_KELVIN,
                           weatherForecastPrediction.getWindSpeed());
   }
 
@@ -137,7 +152,8 @@ public class WindFarm extends Producer
   protected Object readResolve ()
   {
     this.name = "Wind farm";
-    initialize(name, PowerType.WIND_PRODUCTION, 24, upperPowerCap,
+    initialize(name, PowerType.WIND_PRODUCTION,
+               DEFAULT_WIND_FARM_PROFILE_HOURS, upperPowerCap,
                IdGenerator.createId());
     for (WindTurbine wt: turbines) {
       wt.setRs(seed);

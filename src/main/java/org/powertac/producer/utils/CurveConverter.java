@@ -24,6 +24,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 /**
+ * Serializes and deserializes the {@link Curve} class.
+ * 
  * @author Doom
  * 
  */

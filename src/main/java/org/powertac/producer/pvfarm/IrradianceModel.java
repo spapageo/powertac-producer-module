@@ -19,35 +19,86 @@ import static java.lang.Math.*;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import static org.powertac.producer.pvfarm.SolarFarm.*;
 
 /**
+ * A helper class that contains the functions needed to model the irradiance
+ * that reaches a pv panel
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 final class IrradianceModel
 {
+
+  private static final double VAPOR_ABSORBTION_CONS_1 = 0.29;
+  private static final double VAPOR_ABSORBTION_CONS_2 = 14.15;
+  private static final double VAPOR_ABSORBTION_CONS_3 = 0.635;
+  private static final double VAPOR_ABSORBTION_CONS_4 = 0.5925;
+
+  private static final double COMPRESSD_VAPOR_CONS_1 = 4.93;
+  private static final double COMPRESSD_VAPOR_CONS_2 = 26.23;
+  private static final double COMPRESSD_VAPOR_CONS_3 = 5416.0;
+
+  private static final double IRRADIANCE_CONSTANT_COEFF = 0.033;
+  private static final double SPACE_MEAN_IRRADIANCE = 1367.7;
+
+  private static final double AIRMASS_CALC_CONST_1 = 0.50572;
+  private static final double AIRMASS_CALC_CONST_2 = 6.07995;
+  private static final double AIRMASS_CALC_CONST_3 = -1.6354;
+
+  private static final double ATMOSPHERE_ALBEDO_RATE = 0.00492;
+  private static final double ATMOSPHERE_ALBEDO_CONST = 0.068;
+
+  private static final double OZONE_ABSORBTION_CONS_1 = 0.1082;
+  private static final double OZONE_ABSORBTION_CONS_2 = 13.86;
+  private static final double OZONE_ABSORBTION_CONS_3 = 0.805;
+  private static final double OZONE_ABSORBTION_CONS_4 = 0.00658;
+  private static final double OZONE_ABSORBTION_CONS_5 = 10.36;
+  private static final int OZONE_ABSORBTION_CONS_6 = 3;
+  private static final double OZONE_ABSORBTION_CONS_7 = 0.00218;
+  private static final double OZONE_ABSORBTION_CONS_8 = 0.0042;
+  private static final double OZONE_ABSORBTION_CONS_9 = 3.23;
+  private static final int OZONE_ABSORBTION_CONS_10 = 10;
+  private static final int OZONE_ABSORBTION_CONS_11 = -6;
+  private static final int OZONE_ABSORBTION_CONS_12 = 2;
+
+  private static final double SCATTER_RATION_CONS = 0.0043;
+
+  private static double[] airmassValues = { 0.5, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0,
+                                           3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0,
+                                           10.0, 30.0, 40 };
+  private static double[] RayleighScatterValues = { 0.9385, 0.8973, 0.8830,
+                                                   0.8696, 0.8572, 0.8455,
+                                                   0.8344, 0.7872, 0.7673,
+                                                   0.7493, 0.7328, 0.7177,
+                                                   0.7037, 0.6907, 0.6108,
+                                                   0.4364, 0.41 };
+
+  static private PolynomialSplineFunction spline = new SplineInterpolator()
+          .interpolate(airmassValues, RayleighScatterValues);
+
   private IrradianceModel ()
   {
+    // This should never be called
   }
-
-  static private PolynomialSplineFunction spline = null;
 
   /**
    * Calculate sun direct irradiance
    * 
    * @param sunaltitude
-   *          sun altitude angle in degrees
+   *          sun altitude angle in degrees < 90 & > -90
    * @param solarconstant
-   *          solar irradiance constant
+   *          solar irradiance constant in watt/m^2 > 0
    * @param T0
-   *          the absorption coefficient of the ozone laye
+   *          the absorption coefficient of the ozone laye > 0
    * @param Tr
-   *          the absorption coefficient due to the Rayleigh scattering
+   *          the absorption coefficient due to the Rayleigh scattering > 0
    * @param aw
-   *          the absorption coefficient of the water vapor
+   *          the absorption coefficient of the water vapor > 0
    * @param Ta
-   *          the absorption coefficient of aerosols
-   * @return sun direct irradiance
+   *          the absorption coefficient of aerosols > 0
+   * @return sun direct irradiance in watt/m^2
    */
   protected static double getDirectIrradiance (double sunaltitude,
                                                double solarconstant, double T0,
@@ -77,7 +128,7 @@ final class IrradianceModel
    *          the aerosol albedo
    * @param f
    *          the ration of forward to total scattering
-   * @return sun diffusion irradiance
+   * @return sun diffusion irradiance in watt/m^2
    */
   protected static double getDiffuseIrradiance (double sunaltitude,
                                                 double solarconstant,
@@ -109,9 +160,9 @@ final class IrradianceModel
    * @param irradiance
    *          input irradiance
    * @param cloudCoverage
-   *          percent of cloud cover
+   *          percent of cloud cover >= 0 & <=1
    * @param groundAlbedo
-   *          ground reflective coefficient
+   *          ground reflective coefficient > 0
    * @param p
    *          cloud coefficient
    * @param q
@@ -122,7 +173,7 @@ final class IrradianceModel
    *          cloud coefficient
    * @param m
    *          cloud coefficient
-   * @return
+   * @return irradiance in watt/m^2
    */
   protected static double getCloudModifiedIrradiance (double irradiance,
                                                       double cloudCoverage,
@@ -145,8 +196,9 @@ final class IrradianceModel
       tC = p + q * cloudCoverage + r * pow(cloudCoverage, 2);
     }
 
-    return irradiance * tC
-           / (1 - groundAlbedo * (0.068 + 0.00492 * cloudCoverage));
+    double atmosphereAlbedo =
+      ATMOSPHERE_ALBEDO_CONST + ATMOSPHERE_ALBEDO_RATE * cloudCoverage;
+    return irradiance * tC / (1 - groundAlbedo * atmosphereAlbedo);
   }
 
   /**
@@ -196,7 +248,9 @@ final class IrradianceModel
    */
   protected static double getIrradianceConstant (int day)
   {
-    return 1367.7 * (1 + 0.033 * cos(toRadians(2.0 * PI * day / 365.0)));
+    return SPACE_MEAN_IRRADIANCE
+           * (1 + IRRADIANCE_CONSTANT_COEFF
+                  * cos(toRadians(2.0 * PI * day / DAYS_IN_A_YEAR)));
   }
 
   /**
@@ -209,8 +263,10 @@ final class IrradianceModel
   protected static double getAirMass (double sunAltitudeAngle)
   {
     assert (sunAltitudeAngle >= 0 && sunAltitudeAngle <= 90);
-    return 1 / (cos(toRadians(90 - sunAltitudeAngle)) + 0.50572 * pow(6.07995 + sunAltitudeAngle,
-                                                                      -1.6354));
+    return 1 / (cos(toRadians(90 - sunAltitudeAngle)) + AIRMASS_CALC_CONST_1
+                                                        * pow(AIRMASS_CALC_CONST_2
+                                                                      + sunAltitudeAngle,
+                                                              AIRMASS_CALC_CONST_3));
   }
 
   /**
@@ -231,10 +287,18 @@ final class IrradianceModel
     assert (humidity >= 0 && humidity <= 1);
     assert (temperature >= 0);
 
+    // this is the compressed depth of the water vapor in the atmosphere
+    double part1 =
+      pow(E, COMPRESSD_VAPOR_CONS_2 - COMPRESSD_VAPOR_CONS_3 / temperature);
+
     double xw =
-      airmass * 4.93 * humidity * pow(E, 26.23 - 5416.0 / temperature)
-              / temperature;
-    return 0.29 * xw / (pow(1 + 14.15 * xw, 0.635) + 0.5925 * xw);
+      airmass * COMPRESSD_VAPOR_CONS_1 * humidity * part1 / temperature;
+
+    double part2 =
+      pow(1 + VAPOR_ABSORBTION_CONS_2 * xw, VAPOR_ABSORBTION_CONS_3);
+
+    return VAPOR_ABSORBTION_CONS_1 * xw
+           / (part2 + VAPOR_ABSORBTION_CONS_4 * xw);
   }
 
   /**
@@ -252,10 +316,23 @@ final class IrradianceModel
     assert (airmass >= 0.9 && airmass <= 40);
     double x0 = airmass * m0;
 
-    double a0 =
-      0.1082 * x0 / (1 + 13.86 * pow(x0, 0.805)) + 0.00658 * x0
-              / (1 + pow(10.36 * x0, 3)) + 0.00218
-              / (1 + 0.0042 * x0 + 3.23 * pow(10, -6) * pow(x0, 2));
+    double part1 =
+      OZONE_ABSORBTION_CONS_1
+              * x0
+              / (1 + OZONE_ABSORBTION_CONS_2 * pow(x0, OZONE_ABSORBTION_CONS_3));
+    double part2 =
+      OZONE_ABSORBTION_CONS_4
+              * x0
+              / (1 + pow(OZONE_ABSORBTION_CONS_5 * x0, OZONE_ABSORBTION_CONS_6));
+    double part3 =
+      OZONE_ABSORBTION_CONS_7
+              / (1 + OZONE_ABSORBTION_CONS_8 * x0 + OZONE_ABSORBTION_CONS_9
+                                                    * pow(OZONE_ABSORBTION_CONS_10,
+                                                          OZONE_ABSORBTION_CONS_11)
+                                                    * pow(x0,
+                                                          OZONE_ABSORBTION_CONS_12));
+    // the absorption coefficient
+    double a0 = part1 + part2 + part3;
 
     return 1 - a0;
   }
@@ -270,26 +347,7 @@ final class IrradianceModel
   protected static double getTr (double airmass)
   {
     assert (airmass >= 0.9 && airmass <= 40);
-    if (spline != null) {
-      return spline.value(airmass);
-    }
-    else {
-      double[] am =
-        { 0.5, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0,
-         10.0, 30.0, 40 };
-      double[] Tr =
-        { 0.9385, 0.8973, 0.8830, 0.8696, 0.8572, 0.8455, 0.8344, 0.7872,
-         0.7673, 0.7493, 0.7328, 0.7177, 0.7037, 0.6907, 0.6108, 0.4364, 0.41 };
-
-      spline = new SplineInterpolator().interpolate(am, Tr);
-
-      return spline.value(airmass);
-
-    }
-    // return 0.9768 - 0.0874*airmass + 0.010607552 * pow(airmass,2) -
-    // 8.46205 * pow(10,-4) * pow(airmass,3) + 3.57246 * pow(10,-5) *
-    // pow(airmass,4)
-    // - 6.0176*pow(10,-7)*pow(airmass,5);
+    return spline.value(airmass);
   }
 
   /**
@@ -302,6 +360,6 @@ final class IrradianceModel
   protected static double getf (double sunaltitude)
   {
     assert (sunaltitude >= 0 && sunaltitude <= 90);
-    return 1 - 0.0043 * (90.0 - sunaltitude);
+    return 1 - SCATTER_RATION_CONS * (90.0 - sunaltitude);
   }
 }

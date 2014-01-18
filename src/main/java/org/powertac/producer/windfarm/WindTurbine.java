@@ -23,42 +23,60 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 import static java.lang.Math.*;
+import static org.powertac.producer.windfarm.WindFarm.*;
 
 /**
+ * Models a wind turbine using its power curve. Also, it models wind shear and
+ * turbulence deviation.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 @XStreamAlias("turbine")
 public class WindTurbine
 {
+  private static final double EARTH_ROTATIONAL_SPEED = 7.2 * pow(10, -5);
+  private static final double UASTERISK_CONS = 34.5;
+  // The air density at sea level at 15 C
+  private static double STANDARD_AIR_DENSITY = 1.225;
+  private static final double DEFAULT_REFERENCE_ALTITUDE = 10;
+  private static final double WIND_SHEAR_DEFAULT_KAPPA = 0.4;
 
+  // The turbines latitude in degrees
   private double latitude;
-
   // The altitude for which the input speed is given
-  private double refAltitude = 10;
-
+  private double refAltitude = DEFAULT_REFERENCE_ALTITUDE;
   // The roughness of the surface near the turbine
   private double surfaceRoughness;
-
-  // The air density at sea level at 15 C
-  private static double standardAirDensity = 1.225;
-
-  private double kappa = 0.4;
-
-  // The maximum/rated output
+  // Used to calculate the wind shear effect
+  private double kappa = WIND_SHEAR_DEFAULT_KAPPA;
+  // The maximum/rated output < 0
   private double ratedOutput;
-
   // The hub height
   private double hubHeigth;
-
   // The power curve for 15 C at sea level
   private Curve powerCurve;
 
   @XStreamOmitField
   private RandomSeed rs;
   @XStreamOmitField
-  private int TimeslotLengthInMin = 60;
+  private int timeslotLengthInMin = MINUTES_IN_HOUR;
 
+  /**
+   * Construct a wind turbine from the given arguments.
+   * 
+   * @param latitude
+   *          the turbine's latitude in degrees
+   * @param surfaceRoughness
+   *          the surface roughness 0~2
+   * @param ratedOutput
+   *          the rated output
+   * @param hubHeigth
+   *          the height of the turbine hub
+   * @param powerCurve
+   *          the power curve of the turbine,
+   *          must contain only negative power values
+   */
   public WindTurbine (double latitude, double surfaceRoughness,
                       double ratedOutput, double hubHeigth, Curve powerCurve)
   {
@@ -72,6 +90,15 @@ public class WindTurbine
     this.latitude = latitude;
   }
 
+  /**
+   * Calculate the power output of this turbine
+   * 
+   * @param temperature
+   *          the ambient temperature
+   * @param avrHourlyWindSpeed
+   *          the average hourly wind speed
+   * @return
+   */
   public double getPowerOutput (double temperature, double avrHourlyWindSpeed)
   {
     if (rs == null)
@@ -93,26 +120,44 @@ public class WindTurbine
 
     double std;
 
+    // change the std formula for low speed values
     if (correctedHourlySpeed > 1)
       std = calculateStd(f, ua, hubHeigth, surfaceRoughness);
     else
       std = 0.1 * correctedHourlySpeed;
 
-    for (int i = 0; i < TimeslotLengthInMin; i++) {
+    for (int i = 0; i < timeslotLengthInMin; i++) {
       sumPowerOutput +=
         calculateAirDensity(temperature, hubHeigth)
                 * powerCurve.value(sampleGaussian(std, correctedHourlySpeed))
-                / standardAirDensity;
+                / STANDARD_AIR_DENSITY;
     }
 
-    return sumPowerOutput / 60;
+    return sumPowerOutput / MINUTES_IN_HOUR;
   }
 
+  /**
+   * Return a random number from a normal distribution with the std and mean
+   * that are given
+   * 
+   * @param std
+   * @param mean
+   * @return
+   */
   public double sampleGaussian (double std, double mean)
   {
     return abs(rs.nextGaussian() * std + mean);
   }
 
+  /**
+   * Calculates the turbulence standard deviation
+   * 
+   * @param f
+   * @param ua
+   * @param altitude
+   * @param z0
+   * @return
+   */
   protected static double calculateStd (double f, double ua, double altitude,
                                         double z0)
   {
@@ -126,14 +171,28 @@ public class WindTurbine
     return std;
   }
 
+  /**
+   * Calculate the air density as a function of height and temperature
+   * 
+   * @param temperature
+   * @param altitude
+   * @return
+   */
   protected double calculateAirDensity (double temperature, double altitude)
   {
     // po (1-Lh/T0)^ (gM/RL)
+
+    // standard air pressure
     double p0 = 101325;
+    // rate of temperature decrease with height
     double L = 0.0065;
+    // gravity accelaration
     double g = 9.80665;
+    // Air specific mass
     double M = 0.0289644;
+    // noble gas constant
     double R = 8.31447;
+    // reference temperature in kelvin
     double T0 = 288.15;
     // calculate pressure as a function of altitude
     double p = p0 * pow(1 - (L * altitude) / T0, (g * M) / (R * L));
@@ -141,29 +200,59 @@ public class WindTurbine
     return (p * M) / (R * temperature);
   }
 
+  /**
+   * Calculate the wind speed at a given altitude
+   * 
+   * @param newAltitude
+   *          the altitude at which to calculate the speed
+   * @param surfaceRoughness
+   *          the surface roughness index
+   * @param uasterisk
+   *          The friction wind speed
+   * @param f
+   * @param kappa
+   * @return
+   */
   protected static double calculateWindAtAltitude (double newAltitude,
                                                    double surfaceRoughness,
                                                    double uasterisk, double f,
                                                    double kappa)
   {
 
-    return (log(newAltitude / surfaceRoughness) * uasterisk + 34.5 * f
-                                                              * newAltitude)
+    return (log(newAltitude / surfaceRoughness) * uasterisk + UASTERISK_CONS
+                                                              * f * newAltitude)
            / kappa;
   }
 
+  /**
+   * Calculated the friction wind speed u*
+   * 
+   * @param inputwindspeed
+   * @param altitude
+   * @param f
+   * @param surfaceRoughness
+   * @param kappa
+   * @return
+   */
   protected static double calculateUasterisk (double inputwindspeed,
                                               double altitude, double f,
                                               double surfaceRoughness,
                                               double kappa)
   {
-    return (inputwindspeed * kappa - 34.5 * f * altitude)
+    return (inputwindspeed * kappa - UASTERISK_CONS * f * altitude)
            / log(altitude / surfaceRoughness);
   }
 
+  /**
+   * Calculate the f parameter used in the calculation of the friction wind
+   * speed
+   * 
+   * @param latitude
+   * @return
+   */
   protected static double calulcatef (double latitude)
   {
-    return 2 * 7.2 * pow(10, -5) * sin(toRadians(abs(latitude)));
+    return 2 * EARTH_ROTATIONAL_SPEED * sin(toRadians(abs(latitude)));
   }
 
   /**
@@ -222,7 +311,7 @@ public class WindTurbine
    */
   public double getStandardAirDensity ()
   {
-    return standardAirDensity;
+    return STANDARD_AIR_DENSITY;
   }
 
   /**
@@ -319,7 +408,7 @@ public class WindTurbine
    */
   public int getTimeslotLengthInMin ()
   {
-    return TimeslotLengthInMin;
+    return timeslotLengthInMin;
   }
 
   /**
@@ -328,7 +417,7 @@ public class WindTurbine
    */
   public void setTimeslotLengthInMin (int timeslotLengthInMin)
   {
-    TimeslotLengthInMin = timeslotLengthInMin;
+    this.timeslotLengthInMin = timeslotLengthInMin;
   }
 
 }

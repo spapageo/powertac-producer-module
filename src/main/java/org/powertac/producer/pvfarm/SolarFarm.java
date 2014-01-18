@@ -29,12 +29,20 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
+ * This class models a solar farm consisting of several pv panels. It works 
+ * by modeling the suns position to calculate the irradiance on the panel.
+ * It also models the effect of clouds on the output.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
 @XStreamAlias("solar-farm")
 public class SolarFarm extends Producer
 {
+
+  private static final double CELCIUS_TO_KELVIN_CONS = 273.15;
+  private static final double SOLAR_DEFAULT_COST_PER_KWH = 0.14;
+  private static final int SOLAR_DEFAULT_PROFILE_HOURS = 24;
 
   @XStreamImplicit
   List<PvPanel> panelList = new ArrayList<PvPanel>();
@@ -47,8 +55,9 @@ public class SolarFarm extends Producer
    */
   public SolarFarm ()
   {
-    super("Solar farm", PowerType.SOLAR_PRODUCTION, 24, 0);
-    this.costPerKwh = 0.14;
+    super("Solar farm", PowerType.SOLAR_PRODUCTION,
+          SOLAR_DEFAULT_PROFILE_HOURS, 0);
+    this.costPerKwh = SOLAR_DEFAULT_COST_PER_KWH;
   }
 
   /**
@@ -84,9 +93,11 @@ public class SolarFarm extends Producer
               .toTimeZone();
     for (PvPanel panel: panelList) {
       powerSum +=
-        panel.getOutput(systemTime, timezone, weatherReport.getCloudCover(),
+        panel.getOutput(systemTime,
+                        timezone,
+                        weatherReport.getCloudCover(),
                         // FIX for celcius to kelvin
-                        weatherReport.getTemperature() + 273.15,
+                        weatherReport.getTemperature() + CELCIUS_TO_KELVIN_CONS,
                         weatherReport.getWindSpeed());
     }
     if (Double.isInfinite(powerSum) || Double.isNaN(powerSum))
@@ -115,7 +126,8 @@ public class SolarFarm extends Producer
         panel.getOutput(systemTime, timezone,
                         weatherForecastPrediction.getCloudCover(),
                         // FIX for celcius to kelvin
-                        weatherForecastPrediction.getTemperature() + 273.15,
+                        weatherForecastPrediction.getTemperature()
+                                + CELCIUS_TO_KELVIN_CONS,
                         weatherForecastPrediction.getWindSpeed());
     }
     return powerSum;
@@ -127,7 +139,7 @@ public class SolarFarm extends Producer
   protected Object readResolve ()
   {
     this.name = "Solar farm";
-    initialize(name, PowerType.FOSSIL_PRODUCTION, 24, upperPowerCap,
+    initialize(name, PowerType.FOSSIL_PRODUCTION, SOLAR_DEFAULT_PROFILE_HOURS, upperPowerCap,
                IdGenerator.createId());
     for (PvPanel panel: panelList) {
       panel.setTimeslotLengthInMin(timeslotLengthInMin);

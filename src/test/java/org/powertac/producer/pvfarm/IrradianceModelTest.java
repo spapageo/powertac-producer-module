@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Locale;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
@@ -54,7 +55,7 @@ public class IrradianceModelTest
       assertTrue(String.valueOf(T0), T0 >= 0);
       assertTrue("Airmass: " + airmass, 1 - Tr <= 1);
       assertTrue("Airmass: " + airmass, 1 - Tr >= 0);
-      pw.printf("%f,%f,%f,%f,%n", airmass, T0 * Tr - aw, T0, 1 - Tr);
+      pw.printf(Locale.UK,"%f,%f,%f,%f,%n", airmass, T0 * Tr - aw, T0, 1 - Tr);
     }
 
     for (double temperature = 280; temperature < 320; temperature++) {
@@ -74,7 +75,7 @@ public class IrradianceModelTest
     PrintWriter pw = new PrintWriter(new File("data/dataGetAirMass.txt"));
     for (double g = 0; g < 91; g++) {
       double data = IrradianceModel.getAirMass(g);
-      pw.printf("%f,%f%n", g, data);
+      pw.printf(Locale.UK,"%f,%f%n", g, data);
       if (g == 0.0) {
         assertEquals(38, data, 0.5);
       }
@@ -113,7 +114,7 @@ public class IrradianceModelTest
                                                0.98, 0.98, IrradianceModel
                                                        .getf(sunAltitude));
         assertTrue(direct >= 0 && diffuse >= 0);
-        pw.printf("%f,%f,%f%n", g, direct, diffuse);
+        pw.printf(Locale.UK,"%f,%f,%f%n", g, direct, diffuse);
       }
     }
     pw.close();
@@ -204,14 +205,14 @@ public class IrradianceModelTest
 
           outsum = outsum + res / 1000;
           outsum2 = outsum2 + (dir + dif) / 1000;
-          pw2.printf("%f,%f%n", tilt * 24 + time, res);
+          pw2.printf(Locale.UK,"%f,%f%n", tilt * 24 + time, res);
 
         }
         else {
-          pw2.printf("%f,%f%n", tilt * 24 + time, 0.0);
+          pw2.printf(Locale.UK,"%f,%f%n", tilt * 24 + time, 0.0);
         }
       }
-      pw.printf("%f,%f,%f%n", tilt, outsum, outsum2);
+      pw.printf(Locale.UK,"%f,%f,%f%n", tilt, outsum, outsum2);
     }
     pw.close();
     pw2.close();
@@ -271,7 +272,7 @@ public class IrradianceModelTest
 
         }
       }
-      pw.printf("%d,%f%n", day, outsum);
+      pw.printf(Locale.UK,"%d,%f%n", day, outsum);
 
     }
     pw.close();
@@ -340,7 +341,7 @@ public class IrradianceModelTest
 
         }
       }
-      pw.printf("%d,%f,%f%n", day, outsum, outsum2);
+      pw.printf(Locale.UK,"%d,%f,%f%n", day, outsum, outsum2);
 
     }
     pw.close();
@@ -364,7 +365,7 @@ public class IrradianceModelTest
     file.createNewFile();
     PrintWriter pw = new PrintWriter(new File("data/dataTrSpline.txt"));
     for (double i = 0.5; i < 40.0; i += 0.1) {
-      pw.printf("%f,%f%n", i, spline.value(i));
+      pw.printf(Locale.UK,"%f,%f%n", i, spline.value(i));
     }
     pw.close();
   }
