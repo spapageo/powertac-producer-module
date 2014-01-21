@@ -59,6 +59,7 @@ public class SteamPlantTest
     SteamPlant plant = new SteamPlant(10000, 5000, -500000);
     XStream xstream = new XStream();
     xstream.autodetectAnnotations(true);
+    new File("data/").mkdir();
     FileWriter fw = new FileWriter("data/steam-plant.xml");
     xstream.toXML(plant, fw);
     fw.close();
