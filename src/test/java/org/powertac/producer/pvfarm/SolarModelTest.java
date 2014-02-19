@@ -116,16 +116,8 @@ public class SolarModelTest
     cal.set(Calendar.MILLISECOND, 0);
 
     assertEquals(6.127,
-                 SolarModel.getSolarTime(longitude, timezone,
-                                         cal.getTimeInMillis()), 0.009);
+                 SolarModel.getSolarTime(longitude,cal), 0.009);
   }
   
-  @Test
-  public void testGetSolarTime(){
-    long time = 1390046805682l;
-    double solartime = SolarModel.getSolarTime(22, 2, time);
-    assertTrue(String.valueOf(solartime),solartime >= 0 && solartime <= 24);
-    time = 1390047649598l;
-    SolarModel.getSolarTime(22, 2, time);
-  }
+
 }

@@ -18,7 +18,10 @@ package org.powertac.producer.pvfarm;
 import static java.lang.Math.*;
 
 import java.util.Calendar;
-import java.util.TimeZone;
+
+import static org.powertac.producer.Producer.MILLISECONDS_IN_SECOND;
+import static org.powertac.producer.Producer.MINUTES_IN_HOUR;
+import static org.powertac.producer.Producer.SECONDS_IN_MINUTE;
 import static org.powertac.producer.pvfarm.SolarFarm.*;
 /**
  * 
@@ -241,22 +244,12 @@ final class SolarModel
    *          local time in milliseconds
    * @return The local solar time in hours from zero to 23.99999999
    */
-  protected static double getSolarTime (double longitude, int timeZone,
-                                        long localTime)
+  protected static double getSolarTime (double longitude, Calendar cal)
   {
      assert (longitude >= -180 && longitude <= 180);
-     assert (abs(timeZone) <= 10);
-     assert (localTime > 0);
 
-    String tz;
-    if (timeZone >= 0) {
-      tz = new String("GMT+" + String.valueOf(timeZone) + ":00");
-    }
-    else {
-      tz = new String("GMT-" + String.valueOf(timeZone) + ":00");
-    }
-    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(tz));
-    cal.setTimeInMillis(localTime);
+     int timezoneOffset = cal.get(Calendar.ZONE_OFFSET) /
+             (MINUTES_IN_HOUR * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND);
 
     int day = cal.get(Calendar.DAY_OF_YEAR);
     double hours = cal.get(Calendar.HOUR_OF_DAY);
@@ -266,7 +259,6 @@ final class SolarModel
       cal.get(Calendar.DST_OFFSET) / (MILLISECONDS_IN_SECOND * SECONDS_IN_MINUTE
               * MINUTES_IN_HOUR);
 
-    assert (timeZone >= -12 && timeZone <= 12);
     assert (longitude >= -180 && longitude <= 180);
 
     double hms =
@@ -274,7 +266,7 @@ final class SolarModel
               * SECONDS_IN_MINUTE);
     double EOT = equationOfTime(day);
 
-    double correctedLongitude = longitudeCorrection(timeZone, longitude);
+    double correctedLongitude = longitudeCorrection(timezoneOffset, longitude);
 
     double result = solarTime(hms, daylightsavings, EOT, correctedLongitude);
     if (result < 0.0) {

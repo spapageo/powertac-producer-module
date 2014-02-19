@@ -142,15 +142,11 @@ public class PvPanel
 
     cal.setTimeInMillis(systemTime);
 
-    int timezoneOffset = cal.get(Calendar.ZONE_OFFSET) /
-            (MINUTES_IN_HOUR * SECONDS_IN_MINUTE * MILLISECONDS_IN_SECOND);
     double sum = 0;
 
     for (int i = 0; i < timeslotLengthInMin; i++) {
       // calculate solar time
-      double solarTime =
-        SolarModel.getSolarTime(panelLongitude, timezoneOffset,
-                                cal.getTimeInMillis());
+      double solarTime = SolarModel.getSolarTime(panelLongitude,cal);
       // calculate sun position
       double sunAltitude =
         SolarModel.getSunAltitudeAngle(solarTime, panelLatitude,

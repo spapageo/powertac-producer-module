@@ -68,6 +68,7 @@ public abstract class Producer
   private static final double INTERRUPTIBILITY_FACTOR = 0.5;
   private static final double WEIGHT_INCONVENIENCE = 1;
   private static final double INNERTIA = 0.1;
+  
   private static final double RATIONALITY_FACTOR = 0.9;
   private static final int TARIFF_COUNT = 5;
   private static final double BROKER_SWITCH_FACTOR = 0.02;
