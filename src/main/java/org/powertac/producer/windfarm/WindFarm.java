@@ -129,14 +129,14 @@ public class WindFarm extends Producer
   }
 
   @Override
-  protected double getOutput (WeatherReport weatherReport)
+  public double getOutput (WeatherReport weatherReport)
   {
     return getPowerOutput(weatherReport.getTemperature() + CELCIUS_TO_KELVIN,
                           weatherReport.getWindSpeed());
   }
 
   @Override
-  protected double
+  public double
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput)

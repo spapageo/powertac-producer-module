@@ -276,7 +276,7 @@ public abstract class Producer
    * @param weatherReport
    * @return the plant output, must be negative or zero
    */
-  abstract protected double getOutput (WeatherReport weatherReport);
+  abstract public double getOutput (WeatherReport weatherReport);
 
   /**
    * This function calculate the plant output based on the weather forecast
@@ -288,7 +288,7 @@ public abstract class Producer
    *          output to compute the next
    * @return the plant predicted output, must be negative or zero
    */
-  abstract protected double
+  abstract public double
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput);

@@ -105,7 +105,6 @@ public class SolarModelTest
   public void dataGetSolarTime ()
   {
     double longitude = 22;
-    int timezone = 2;
 
     Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+2:00"));
     cal.set(Calendar.YEAR, 2013);

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Locale;
 import java.util.Random;
 
 import org.junit.Test;
@@ -82,6 +83,27 @@ public class SteamPlantTest
     PrintWriter fw = new PrintWriter("data/dataFossilOutput.txt");
     for (int i = 0; i < 60; i++) {
       fw.printf("%d,%f%n", i, output.value(i - 5) + r.nextGaussian() * variance);
+    }
+    fw.close();
+  }
+  
+  @Test
+  public void dataGenerateOutputGraph2 () throws IOException
+  {
+    double adjustmentSpeed = 4500;
+    double variance = 1000;
+    double time =
+      (600000 - 780000) / (signum(600000 - 780000) * adjustmentSpeed);
+
+    Curve output = new Curve();
+    output.add(0, 780000);
+    output.add(time/2,(signum(600000 - 780000) * adjustmentSpeed) * time/ 2 + 780000);
+    output.add(time, 600000);
+    Random r = new Random();
+    new File("data/").mkdir();
+    PrintWriter fw = new PrintWriter("data/fossil.txt");
+    for (int i = 0; i <= 80; i++) {
+      fw.printf(Locale.ENGLISH,"%d,%f%n", i, output.value(i - 20) + r.nextGaussian() * variance);
     }
     fw.close();
   }

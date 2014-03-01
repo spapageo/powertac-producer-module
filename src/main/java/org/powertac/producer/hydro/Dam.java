@@ -124,13 +124,13 @@ public class Dam extends HydroBase
   }
 
   @Override
-  protected double getOutput (WeatherReport weatherReport)
+  public double getOutput (WeatherReport weatherReport)
   {
     return getOutput(this.timeService.getCurrentDateTime().getDayOfYear());
   }
 
   @Override
-  protected double
+  public double
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput)

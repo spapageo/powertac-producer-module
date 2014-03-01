@@ -39,7 +39,7 @@ public final class AntColonyOptimizationSS<E>
   // producer is chosen.
   private Constraints<E> constraints;
   // The function that generates the lowers value for the best solution
-  private MinFunction<E> minFunction;
+  private ObjectiveMinFunction<E> minFunction;
   // This weight controls the importance of the pheromones
   private double a;
   // This weight controls the importance of the local attractiveness
@@ -90,7 +90,7 @@ public final class AntColonyOptimizationSS<E>
    * 
    */
   public AntColonyOptimizationSS (List<E> workSet, Constraints<E> constraints,
-                                  MinFunction<E> minFunction, double a,
+                                  ObjectiveMinFunction<E> minFunction, double a,
                                   double b, double evapRate, int antNum,
                                   double tmin, double tmax)
   {
@@ -135,7 +135,7 @@ public final class AntColonyOptimizationSS<E>
   {
    
     Set<E> bestSet = new HashSet<E>(bestSolution);
-    double bestValue = minFunction.minFunc(bestSolution);
+    double bestValue = minFunction.gradeSolution(bestSolution);
     //Apply evaporations
     for(E item : workSet){
       
@@ -164,10 +164,10 @@ public final class AntColonyOptimizationSS<E>
     
     //Initialize min and min solution;
     List<E> minSolution = antSolutions.get(0);
-    double min = minFunction.minFunc(minSolution);
+    double min = minFunction.gradeSolution(minSolution);
     
     for(List<E> solution : antSolutions){
-      double value = minFunction.minFunc(solution);
+      double value = minFunction.gradeSolution(solution);
       if(value < min){
         min = value;
         minSolution = solution;
@@ -193,7 +193,7 @@ public final class AntColonyOptimizationSS<E>
     solution.add(workSet.get(rng.nextInt(workSet.size())));
 
     // initialize the candidates list
-    candidates = constraints.getCandidates(solution, candidates);
+    candidates = constraints.initializeCandidates(solution);
     while (candidates.size() != 0) {
       // Calculate the probabilities
       probabilities = calculateProbabilities(candidates, probabilities);
@@ -208,7 +208,7 @@ public final class AntColonyOptimizationSS<E>
         prob -= tier;
       }
       // update the candidates
-      candidates = constraints.getCandidates(solution, candidates);
+      candidates = constraints.updateCandidates(solution, candidates);
     }
     return solution;
   }
@@ -249,7 +249,7 @@ public final class AntColonyOptimizationSS<E>
   double calculateProbFactor (E item)
   {
     return pow(pheromones.get(item), a)
-           * pow(1.0 / minFunction.minFunc(item), b);
+           * pow(1.0 / minFunction.gradeItem(item), b);
   }
 
   /**
@@ -297,7 +297,7 @@ public final class AntColonyOptimizationSS<E>
   /**
    * @return the minFunction
    */
-  public MinFunction<E> getMinFunction ()
+  public ObjectiveMinFunction<E> getMinFunction ()
   {
     return minFunction;
   }
@@ -305,7 +305,7 @@ public final class AntColonyOptimizationSS<E>
   /**
    * @param minFunction the minFunction to set
    */
-  public void setMinFunction (MinFunction<E> minFunction)
+  public void setMinFunction (ObjectiveMinFunction<E> minFunction)
   {
     this.minFunction = minFunction;
   }

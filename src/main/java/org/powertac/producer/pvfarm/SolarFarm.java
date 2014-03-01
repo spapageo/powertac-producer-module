@@ -82,7 +82,7 @@ public class SolarFarm extends Producer
    * )
    */
   @Override
-  protected double getOutput (WeatherReport weatherReport)
+  public double getOutput (WeatherReport weatherReport)
   {
     double powerSum = 0;
     long systemTime =
@@ -112,7 +112,7 @@ public class SolarFarm extends Producer
    * org.powertac.common.WeatherForecastPrediction)
    */
   @Override
-  protected double
+  public double
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput)

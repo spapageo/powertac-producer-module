@@ -152,13 +152,13 @@ public class SteamPlant extends Producer
   }
 
   @Override
-  protected double getOutput (WeatherReport weatherReport)
+  public double getOutput (WeatherReport weatherReport)
   {
     return getOutput();
   }
 
   @Override
-  protected double
+  public double
     getOutput (int timeslotIndex,
                WeatherForecastPrediction weatherForecastPrediction,
                double previousOutput)
