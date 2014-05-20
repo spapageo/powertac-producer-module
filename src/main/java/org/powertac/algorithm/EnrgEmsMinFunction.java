@@ -11,6 +11,9 @@ import org.powertac.common.WeatherReport;
 import org.powertac.producer.Producer;
 
 /**
+ * This class implement the ObjectiveMinFunction interface as a set of weights
+ * for the energy cost, emissions and distance from the energy limit.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
@@ -21,11 +24,9 @@ public class EnrgEmsMinFunction implements ObjectiveMinFunction<Producer>
   private double costWeight;
   private double emissionWeight;
   private double limitWeight;
-
-  WeatherReport waetherReport;
-  List<Producer> workSet;
-
-  Map<Producer, Double> energyCache = new HashMap<Producer, Double>();
+  private WeatherReport waetherReport;
+  private List<Producer> workSet;
+  private Map<Producer, Double> energyCache = new HashMap<Producer, Double>();
 
   public EnrgEmsMinFunction (double limit, double costWeight,
                              double emissionWeight, double limitWeight,

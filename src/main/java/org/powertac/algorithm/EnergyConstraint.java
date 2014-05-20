@@ -27,6 +27,10 @@ import org.powertac.common.WeatherReport;
 import org.powertac.producer.Producer;
 
 /**
+ * This class implements the Constraint interface as energy constraint of
+ * the Producer class so that the candidate's power added to the solution
+ * power doesn't exceed the limit.
+ * 
  * @author Spyros Papageorgiou
  * 
  */
@@ -46,8 +50,10 @@ public class EnergyConstraint implements Constraints<Producer>
   private double previousEnergySum = 0;
 
   /**
+   * Constructs the energy constraint for the Ant Colony algorithm and Producer
+   * class
    * 
-   * @param workSet
+   * @param workSet The set of Producers on
    * @param energyThreshold
    * @param report
    */
