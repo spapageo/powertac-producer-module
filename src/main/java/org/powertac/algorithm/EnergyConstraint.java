@@ -53,9 +53,9 @@ public class EnergyConstraint implements Constraints<Producer>
    * Constructs the energy constraint for the Ant Colony algorithm and Producer
    * class
    * 
-   * @param workSet The set of Producers on
-   * @param energyThreshold
-   * @param report
+   * @param workSet The set of Producers on which the algorithm is run
+   * @param energy Threshold The energy threshold. Must be negative.
+   * @param report The weather report for the time when the algorithm is run.
    */
   public EnergyConstraint (List<Producer> workSet, double energyThreshold,
                            WeatherReport report)
@@ -63,7 +63,6 @@ public class EnergyConstraint implements Constraints<Producer>
     this.workSet = workSet;
     this.energyThreshold = energyThreshold;
     this.report = report;
-    initializeCache();
   }
 
   /*
@@ -79,6 +78,7 @@ public class EnergyConstraint implements Constraints<Producer>
   @Override
   public List<Producer> initializeCandidates (List<Producer> solution)
   {
+    initializeCache();
     List<Producer> candidates = new ArrayList<Producer>();
     double solution_power = getSolutionPower(solution);
     previousEnergySum = solution_power;
@@ -88,6 +88,8 @@ public class EnergyConstraint implements Constraints<Producer>
         candidates.add(prod);
       }
     }
+    
+    candidates.remove(solution.get(0));
 
     return candidates;
   }
@@ -103,6 +105,8 @@ public class EnergyConstraint implements Constraints<Producer>
     for (Iterator<Producer> it = candidates.iterator(); it.hasNext();) {
       Producer prod = it.next();
       if (abs(getProducerPower(prod) + solution_power) > abs(energyThreshold)) {
+        it.remove();
+      }else if(prod == solution.get(solution.size() - 1)){
         it.remove();
       }
     }

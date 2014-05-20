@@ -57,8 +57,7 @@ public class EnrgEmsMinFunction implements ObjectiveMinFunction<Producer>
 
     double result =
       (costWeight * item.getCostPerKw() + emissionWeight
-                                          * item.getCo2Emissions())
-              * energyCache.get(item);
+                                          * item.getCo2Emissions());
     return result;
   }
 
