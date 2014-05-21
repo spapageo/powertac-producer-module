@@ -31,7 +31,7 @@ import static java.lang.Math.*;
 public final class AntColonyOptimizationSS<E>
 {
   // The maximum number of iterations that that algorithm will perform
-  private static final int MAX_ITERATIONS = 20;
+  private int maxIterations = 20;
   // This is the working set of the algorithm from which a optimal subset is
   // estimated
   private List<E> workSet;
@@ -114,7 +114,7 @@ public final class AntColonyOptimizationSS<E>
     List<List<E>> antSolutions = new ArrayList<List<E>>(antNum);
     List<E> bestSolution = new ArrayList<E>(0);
 
-    for (int i = 0; i < MAX_ITERATIONS; i++) {
+    for (int i = 0; i < maxIterations; i++) {
       antSolutions.clear();
       for (int antI = 0; antI < antNum; antI++) {
         antSolutions.add(constructSolution());
@@ -428,5 +428,21 @@ public final class AntColonyOptimizationSS<E>
   public Map<E, Double> getPheromones ()
   {
     return pheromones;
+  }
+  
+  /**
+   * @return the max iterations of the algorithm
+   */
+  public int getMaxIterations ()
+  {
+    return maxIterations;
+  }
+  
+  /**
+   * @param maxIterations the maxIterations to set
+   */
+  public void setMaxIterations (int maxIterations)
+  {
+    this.maxIterations = maxIterations;
   }
 }

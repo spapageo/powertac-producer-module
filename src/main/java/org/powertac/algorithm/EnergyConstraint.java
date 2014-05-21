@@ -84,7 +84,7 @@ public class EnergyConstraint implements Constraints<Producer>
     previousEnergySum = solution_power;
 
     for (Producer prod: workSet) {
-      if (abs(getProducerPower(prod) + solution_power) < abs(energyThreshold)) {
+      if (abs(getProducerPower(prod) + solution_power) <= abs(energyThreshold)) {
         candidates.add(prod);
       }
     }
