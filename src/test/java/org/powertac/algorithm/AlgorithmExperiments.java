@@ -77,8 +77,8 @@ public class AlgorithmExperiments
       new EnrgEmsMinFunction(-20 * 5000 - 1, 16, 1, 1, report, workSet);
 
     AntColonyOptimizationSS<Producer> algo =
-      new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 2,
-                                            0.99, 10, 0.1, 10);
+      new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
+                                            0.1, 10, 0.1, 10);
 
     double bestGrade = minFun.gradeSolution(perfectSol);
     Double[][] diffs = new Double[40][10];
@@ -125,8 +125,8 @@ public class AlgorithmExperiments
       new EnrgEmsMinFunction(-20 * 5000 - 1, 16, 1, 1, report, workSet);
 
     AntColonyOptimizationSS<Producer> algo =
-      new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 2,
-                                            0.99, 10, 0.1, 10);
+      new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
+                                            0.1, 10, 0.1, 10);
 
     double bestGrade = minFun.gradeSolution(perfectSol);
     Double[][] diffs = new Double[40][10];
@@ -174,7 +174,7 @@ public class AlgorithmExperiments
 
     AntColonyOptimizationSS<Producer> algo =
       new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
-                                            0.99, 10, 0.1, 10);
+                                            0.1, 10, 0.1, 10);
 
     double bestGrade = minFun.gradeSolution(perfectSol);
     Double[][] diffs = new Double[20][20];
@@ -222,14 +222,14 @@ public class AlgorithmExperiments
 
     AntColonyOptimizationSS<Producer> algo =
       new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
-                                            0.99, 10, 0.1, 10);
+                                            0.1, 10, 0.1, 10);
 
     double bestGrade = minFun.gradeSolution(perfectSol);
-    Double[][] diffs = new Double[20][20];
+    Double[][] diffs = new Double[20][100];
     System.out.println(bestGrade);
     for (int j = 0; j < 20; j++) {
-      algo.setTmin((j+1)*0.1);
-      for (int i = 0; i < 20; i++) {
+      algo.setTmin((j)*0.5);
+      for (int i = 0; i < 100; i++) {
         List<Producer> sol = algo.execute();
         diffs[j][i] = bestGrade - minFun.gradeSolution(sol);
       }
@@ -239,7 +239,7 @@ public class AlgorithmExperiments
     new File("data/").mkdir();
     PrintWriter pw = new PrintWriter("data/algo_min_pher.txt");
     for (int j = 0; j < 20; j++) {
-      for (int i = 0; i < 20; i++) {
+      for (int i = 0; i < 100; i++) {
         pw.print(diffs[j][i]);
         pw.print(',');
       }
@@ -270,14 +270,14 @@ public class AlgorithmExperiments
 
     AntColonyOptimizationSS<Producer> algo =
       new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
-                                            0.99, 10, 0.1, 10);
+                                            0.1, 10, 0.1, 10);
 
     double bestGrade = minFun.gradeSolution(perfectSol);
-    Double[][] diffs = new Double[20][20];
+    Double[][] diffs = new Double[20][100];
     System.out.println(bestGrade);
     for (int j = 0; j < 20; j++) {
       algo.setTmax((j+1));
-      for (int i = 0; i < 20; i++) {
+      for (int i = 0; i < 100; i++) {
         List<Producer> sol = algo.execute();
         diffs[j][i] = bestGrade - minFun.gradeSolution(sol);
       }
@@ -287,7 +287,105 @@ public class AlgorithmExperiments
     new File("data/").mkdir();
     PrintWriter pw = new PrintWriter("data/algo_max_pher.txt");
     for (int j = 0; j < 20; j++) {
-      for (int i = 0; i < 20; i++) {
+      for (int i = 0; i < 100; i++) {
+        pw.print(diffs[j][i]);
+        pw.print(',');
+      }
+      pw.println();
+    }
+    pw.close();
+  }
+  
+  @Test
+  public void testA () throws Exception
+  {
+    List<Producer> workSet = new ArrayList<Producer>();
+    addProducers(20, 0, 0.03, -5000, workSet);
+    addProducers(20, 1.5, 0.1, -4000, workSet);
+    addProducers(20, 0, 0.14, -2000, workSet);
+    addProducers(20, 0, 0.08, -3000, workSet);
+
+    List<Producer> perfectSol = new ArrayList<Producer>();
+    for (int i = 0; i < 20; i++) {
+      perfectSol.add(workSet.get(i));
+    }
+
+    EnergyConstraint enrgCon =
+      new EnergyConstraint(workSet, -20 * 5000 - 1, report);
+    EnrgEmsMinFunction minFun =
+      new EnrgEmsMinFunction(-20 * 5000 - 1, 16, 1, 1, report, workSet);
+
+    AntColonyOptimizationSS<Producer> algo =
+      new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
+                                            0.1, 10, 0.1, 10);
+
+    double bestGrade = minFun.gradeSolution(perfectSol);
+    Double[][] diffs = new Double[20][100];
+    System.out.println(bestGrade);
+    
+    for (int j = 0; j < 20; j++) {
+      algo.setA((j+1)*0.2);
+      for (int i = 0; i < 100; i++) {
+        List<Producer> sol = algo.execute();
+        diffs[j][i] = bestGrade - minFun.gradeSolution(sol);
+      }
+      System.out.print(j);
+    }
+    
+    System.out.println();
+    new File("data/").mkdir();
+    PrintWriter pw = new PrintWriter("data/algo_a.txt");
+    for (int j = 0; j < 20; j++) {
+      for (int i = 0; i < 100; i++) {
+        pw.print(diffs[j][i]);
+        pw.print(',');
+      }
+      pw.println();
+    }
+    pw.close();
+  }
+  
+  @Test
+  public void testB () throws Exception
+  {
+    List<Producer> workSet = new ArrayList<Producer>();
+    addProducers(20, 0, 0.03, -5000, workSet);
+    addProducers(20, 1.5, 0.1, -4000, workSet);
+    addProducers(20, 0, 0.14, -2000, workSet);
+    addProducers(20, 0, 0.08, -3000, workSet);
+
+    List<Producer> perfectSol = new ArrayList<Producer>();
+    for (int i = 0; i < 20; i++) {
+      perfectSol.add(workSet.get(i));
+    }
+
+    EnergyConstraint enrgCon =
+      new EnergyConstraint(workSet, -20 * 5000 - 1, report);
+    EnrgEmsMinFunction minFun =
+      new EnrgEmsMinFunction(-20 * 5000 - 1, 16, 1, 1, report, workSet);
+
+    AntColonyOptimizationSS<Producer> algo =
+      new AntColonyOptimizationSS<Producer>(workSet, enrgCon, minFun, 1, 1,
+                                            0.1, 10, 0.1, 10);
+
+    double bestGrade = minFun.gradeSolution(perfectSol);
+    Double[][] diffs = new Double[20][100];
+    System.out.println(bestGrade);
+    
+    for (int j = 0; j < 20; j++) {
+      algo.setB((j+1)*0.2);
+      for (int i = 0; i < 100; i++) {
+        List<Producer> sol = algo.execute();
+        diffs[j][i] = bestGrade - minFun.gradeSolution(sol);
+      }
+      System.out.print(j);
+    }
+    
+    System.out.println();
+    new File("data/").mkdir();
+    PrintWriter pw = new PrintWriter("data/algo_b.txt");
+    for (int j = 0; j < 20; j++) {
+      for (int i = 0; i < 100; i++) {
         pw.print(diffs[j][i]);
         pw.print(',');
       }
