@@ -74,8 +74,8 @@ public class TarifEvalVariableTest
     // satisfy dependencies
     ReflectionTestUtils.setField(tariffSubscriptionRepo,
                                  "tariffRepo", tariffRepo);
-    ReflectionTestUtils.setField(tariffSubscriptionRepo,
-                                 "tariffMarketService", tariffMarket);
+    //ReflectionTestUtils.setField(tariffSubscriptionRepo,
+    //                             "tariffMarketService", tariffMarket);
 
     // set up default tariffs
     defaultBroker = new Broker("default");
